@@ -8,7 +8,7 @@ from aiohttp import ClientSession, ClientResponse
 
 from parsing.links import link_extractor
 from requests.get import get_with_client
-from structures.queues import TimeoutQueue, URLQueue, EmptyURLQueue
+from structures.queues import TimeoutQueue, URLQueue
 from utils.helpers import create_client_session
 from utils.urls import hosts_from_url
 
