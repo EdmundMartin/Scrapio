@@ -1,5 +1,6 @@
 import asyncio
 from concurrent.futures import ProcessPoolExecutor
+import logging
 from typing import Union, List, Any
 
 
@@ -24,6 +25,9 @@ class BaseScraper:
         self._request_queue = URLQueue(max_crawl_size)
         self._parse_queue = TimeoutQueue()
 
+        self._executor = kwargs.get('executor', None)
+        self._logger = kwargs.get('logger', logging.getLogger("Scraper"))
+
     @classmethod
     async def create_scraper(cls, *args, timeout=30, user_agent=None, **kwargs):
         self = cls(*args, **kwargs)
@@ -46,26 +50,38 @@ class BaseScraper:
         while True:
             try:
                 url = await self._request_queue.get_max_wait(30)
-                print(url)
+                self._logger.info('Requesting URL: {}'.format(url))
                 resp = await get_with_client(self._client, url)
                 self._parse_queue.put_nowait(resp)
             except asyncio.TimeoutError:
                 print('Run out of URLs')
                 return
 
-    async def consume_parse_queue(self):
+    async def consume_parse_queue(self) -> None:
         while True:
             try:
                 loop = asyncio.get_event_loop()
                 resp = await self._parse_queue.get_max_wait(30)
-                links = await loop.run_in_executor(self._process_pool, link_extractor, resp, self._allowed_domains, True)
-                parsed_data = await loop.run_in_executor(self._process_pool, self.parse_result, resp)
+                links = await loop.run_in_executor(self._executor, link_extractor, resp, self._allowed_domains, True)
+                parsed_data = await loop.run_in_executor(self._executor, self.parse_result, resp)
                 await self.save_results(parsed_data)
                 for link in links:
                     await self._request_queue.put_unique_url(link)
             except asyncio.TimeoutError:
                 print('Run out of parse responses')
                 return
+
+    async def run_scraper(self, request_workers: int, parse_workers: int) -> None:
+        request_group = asyncio.gather(*[self.consume_request_queue() for i in range(request_workers)])
+        parser_group = asyncio.gather(*[self.consume_parse_queue() for i in range(parse_workers)])
+
+        loop = asyncio.get_event_loop()
+        try:
+            all_groups = asyncio.gather(request_group, parser_group)
+            loop.run_until_complete(all_groups)
+        finally:
+            await self._client.close()
+            loop.close()
 
 
 async def run_scraper():
