@@ -14,8 +14,8 @@ class TimeoutQueue(asyncio.Queue):
         try:
             async with timeout(wait_time):
                 return await self.get()
-        except TimeoutError:
-            raise asyncio.QueueEmpty("Queue Timeout")
+        except asyncio.TimeoutError:
+            raise asyncio.TimeoutError("Queue Timeout")
 
 
 class URLQueue(asyncio.Queue):
@@ -41,4 +41,4 @@ class URLQueue(asyncio.Queue):
             async with timeout(wait_time):
                 return await self.get()
         except asyncio.TimeoutError:
-            raise asyncio.QueueEmpty("Queue Timeout")
+            raise asyncio.TimeoutError("Queue Timeout")

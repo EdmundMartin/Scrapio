@@ -1,8 +1,8 @@
-from aiohttp import ClientSession, ClientResponse, ClientError
+from aiohttp import ClientSession, ClientResponse, ClientError, ClientTimeout
 
 
-async def get_with_client(client: ClientSession, url: str) -> ClientResponse:
-    async with client.get(url) as resp:
+async def get_with_client(client: ClientSession, client_timeout: ClientTimeout, url: str) -> ClientResponse:
+    async with client.get(url, timeout=client_timeout) as resp:
         try:
             html = await resp.read()
         except ClientError:
