@@ -3,7 +3,7 @@ from asyncio import Queue
 from typing import List
 
 
-class AbstractProxyManager:
+class AbstractProxyManager(ABC):
 
     @abstractmethod
     async def get_proxy(self) -> str:

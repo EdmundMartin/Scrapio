@@ -1,8 +1,16 @@
+from abc import ABC, abstractmethod
 from typing import List, Union, Dict
 from urllib.robotparser import RobotFileParser
 
 
-class URLFilter:
+class AbstractURLFilter(ABC):
+
+    @abstractmethod
+    def can_crawl(self, host: str, url: str) -> bool:
+        pass
+
+
+class URLFilter(AbstractURLFilter):
 
     def __init__(self, net_locations: List[str], additional_rules: Union[List[str], None], follow_robots: bool):
         self._net_loclations = net_locations
