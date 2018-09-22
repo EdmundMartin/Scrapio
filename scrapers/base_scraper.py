@@ -9,20 +9,21 @@ from aiohttp import ClientSession, ClientResponse, ClientTimeout
 from parsing.links import link_extractor
 from requests.get import get_with_client
 from structures.queues import TimeoutQueue, URLQueue
+from structures.filtering import URLFilter
 from utils.helpers import create_client_session
 from utils.urls import hosts_from_url
 
 
 class BaseScraper:
 
-    def __init__(self, start_url: Union[List[str], str], allowed_domains=None, max_crawl_size=None, **kwargs):
+    def __init__(self, start_url: Union[List[str], str], max_crawl_size=None, **kwargs):
         self._start_url = start_url
         self._client: Union[None, ClientSession] = None
         self._client_timeout: Union[None, ClientTimeout] = None
         self._timeout: Union[int, None] = None
-        self._allowed_domains = hosts_from_url(allowed_domains, start_url)
 
-        self._process_pool = ProcessPoolExecutor(max_workers=2)
+        self._url_filter = URLFilter(start_url, kwargs.get('additional_rules', []), kwargs.get('follow_robots', True))
+
         self._request_queue = URLQueue(max_crawl_size)
         self._parse_queue = TimeoutQueue()
 
@@ -59,6 +60,7 @@ class BaseScraper:
         while True:
             try:
                 url = await self._request_queue.get_max_wait(30)
+                print(url)
                 self._logger.info('Requesting URL: {}'.format(url))
                 resp = await get_with_client(self._client, self._client_timeout, url)
                 self._parse_queue.put_nowait(resp)
@@ -74,7 +76,7 @@ class BaseScraper:
             try:
                 loop = asyncio.get_event_loop()
                 resp = await self._parse_queue.get_max_wait(30)
-                links = await loop.run_in_executor(self._executor, link_extractor, resp, self._allowed_domains, True)
+                links = await loop.run_in_executor(self._executor, link_extractor, resp, self._url_filter, True)
                 parsed_data = await loop.run_in_executor(self._executor, self.parse_result, resp)
                 await self.save_results(parsed_data)
                 for link in links:

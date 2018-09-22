@@ -1,6 +1,6 @@
 from typing import Union, Dict, List
 
-from aiohttp import ClientSession
+from aiohttp import ClientResponse, ClientSession
 
 from structures.queues import URLQueue
 
@@ -13,3 +13,7 @@ def create_client_session(headers: Union[None, Dict[str, str]], timeout=30) -> C
         for k, v in headers.items():
             d_headers[k] = v
     return ClientSession(headers=d_headers, conn_timeout=timeout)
+
+
+def response_to_html(response: ClientResponse) -> str:
+    return response._body.decode('utf-8', errors='ignore')

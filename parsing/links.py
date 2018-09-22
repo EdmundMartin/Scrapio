@@ -4,8 +4,11 @@ from urllib.parse import urlparse, urljoin, urldefrag
 from aiohttp import ClientResponse
 import lxml.html as lh
 
+from structures.filtering import URLFilter
+from parsing.valid_url import valid_url
 
-def link_extractor(response: ClientResponse, allowed_domains: List[str], defrag: bool) -> List[str]:
+
+def link_extractor(response: ClientResponse, url_filter: URLFilter, defrag: bool) -> List[str]:
     html = response._body.decode('utf-8', errors='ignore')
     req_url = response.url
     dom = lh.fromstring(html)
@@ -13,6 +16,7 @@ def link_extractor(response: ClientResponse, allowed_domains: List[str], defrag:
     for href in dom.xpath('//a/@href'):
         url = urljoin(str(req_url), href)
         netloc = urlparse(url).netloc
-        if netloc in allowed_domains:
+        can_crawl = url_filter.can_crawl(netloc, url)
+        if can_crawl and valid_url(url):
             found_urls.append(url)
     return found_urls

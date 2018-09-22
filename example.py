@@ -11,5 +11,5 @@ class OurScraper(BaseScraper):
 
 
 if __name__ == '__main__':
-    scraper = OurScraper.create_scraper('https://www.zoopla.co.uk/')
+    scraper = OurScraper.create_scraper('http://www.net-a-porter.com')
     scraper.run_scraper(10, 2)
