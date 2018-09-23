@@ -4,7 +4,7 @@ Asyncio web scraping framework. Work in progress.
 ## Example
 
 ```python
-from scrapers.base_scraper import BaseScraper
+from scrapio.scrapers.base_scraper import BaseScraper
 
 
 class OurScraper(BaseScraper):
@@ -17,7 +17,7 @@ class OurScraper(BaseScraper):
 
 
 if __name__ == '__main__':
-    scraper = OurScraper.create_scraper('https://www.zoopla.co.uk/')
+    scraper = OurScraper.create_scraper('http://www.net-a-porter.com')
     scraper.run_scraper(10, 2)
 ```
 The above outlines how to create a simple scraper using the framework.
