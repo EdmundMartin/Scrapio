@@ -1,8 +1,8 @@
 import unittest
 import asyncio
 
-from structures.proxies import AbstractProxyManager, RoundRobinProxy
-from structures.queues import URLQueue, TimeoutQueue
+from scrapio.structures import AbstractProxyManager, RoundRobinProxy
+from scrapio.structures import TimeoutQueue
 
 
 class TestRoundRobinProxy(unittest.TestCase):

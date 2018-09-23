@@ -1,4 +1,4 @@
-from scrapers.base_scraper import BaseScraper
+from scrapio.scrapers.base_scraper import BaseScraper
 
 
 class OurScraper(BaseScraper):
