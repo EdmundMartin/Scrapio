@@ -17,7 +17,7 @@ class OurScraper(BaseScraper):
 
 
 if __name__ == '__main__':
-    scraper = OurScraper.create_scraper('http://www.net-a-porter.com')
+    scraper = OurScraper.create_scraper('http://edmundmartin.com')
     scraper.run_scraper(10, 2)
 ```
 The above outlines how to create a simple scraper using the framework.
