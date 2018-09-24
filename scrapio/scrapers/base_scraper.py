@@ -51,7 +51,7 @@ class BaseScraper:
     def parse_result(self, response: ClientResponse) -> Any:
         raise NotImplementedError
 
-    async def save_results(self, *args, **kwargs):
+    async def save_results(self, result):
         raise NotImplementedError
 
     async def __consume_request_queue(self, consumer: int):
