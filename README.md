@@ -1,5 +1,11 @@
 # Scrapio
-Asyncio web scraping framework. Work in progress.
+Asyncio web scraping framework. The project aims to make easy to write a highly performant scrapers with little knowledge of asyncio, while giving enough flexibility so that users can customise behaviour of their scrapers.
+
+## Install
+```
+pip install scrapio
+```
+The project can be installed using Pip.
 
 ## Example
 
@@ -17,7 +23,7 @@ class OurScraper(BaseScraper):
 
 
 if __name__ == '__main__':
-    scraper = OurScraper.create_scraper('http://www.net-a-porter.com')
+    scraper = OurScraper.create_scraper('http://edmundmartin.com')
     scraper.run_scraper(10, 2)
 ```
 The above outlines how to create a simple scraper using the framework.
