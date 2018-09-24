@@ -54,22 +54,24 @@ class BaseScraper:
     async def save_results(self, *args, **kwargs):
         raise NotImplementedError
 
-    async def consume_request_queue(self):
+    async def __consume_request_queue(self, consumer: int):
         self.__remaining_coroutines += 1
         while True:
             try:
                 url = await self._request_queue.get_max_wait(30)
-                self._logger.info('Requesting URL: {}'.format(url))
+                self._logger.info('Thread: {}, Requesting URL: {}'.format(consumer, url))
                 resp = await get_with_client(self._client, self._client_timeout, url)
                 self._parse_queue.put_nowait(resp)
             except asyncio.TimeoutError:
-                self._logger.info('No more URLs, Consumer shutting down')
+                self._logger.info('Thread: {}, No more URLs, Consumer shutting down'.format(consumer))
                 self.__remaining_coroutines -= 1
                 if self.__remaining_coroutines <= 0:
                     await self._client.close()
                 return
+            except Exception as e:
+                self._logger.warning("Thread: {}, Encountered exception: {}".format(consumer, e))
 
-    async def consume_parse_queue(self) -> None:
+    async def __consume_parse_queue(self, consumer: int) -> None:
         while True:
             try:
                 loop = asyncio.get_event_loop()
@@ -80,12 +82,14 @@ class BaseScraper:
                 for link in links:
                     await self._request_queue.put_unique_url(link)
             except asyncio.TimeoutError:
-                self._logger.info('No more Responses, consumer shutting down')
+                self._logger.info('Parser: {}, Message: No more Responses, consumer shutting down'.format(consumer))
                 return
+            except Exception as e:
+                self._logger.warning('Parser: {}, Encountered exception: {}'.format(consumer, e))
 
     def run_scraper(self, request_workers: int, parse_workers: int) -> None:
-        request_group = asyncio.gather(*[self.consume_request_queue() for i in range(request_workers)])
-        parser_group = asyncio.gather(*[self.consume_parse_queue() for i in range(parse_workers)])
+        request_group = asyncio.gather(*[self.__consume_request_queue(i) for i in range(request_workers)])
+        parser_group = asyncio.gather(*[self.__consume_parse_queue(i) for i in range(parse_workers)])
 
         loop = asyncio.get_event_loop()
         try:
