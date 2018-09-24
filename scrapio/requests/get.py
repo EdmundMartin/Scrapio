@@ -1,10 +1,16 @@
 import logging
+from typing import Union
 
 from aiohttp import ClientSession, ClientResponse, ClientError, ClientTimeout
 
+from scrapio.structures.proxies import AbstractProxyManager
+from scrapio.utils.helpers import get_proxy_from_manager
 
-async def get_with_client(client: ClientSession, client_timeout: ClientTimeout, url: str) -> ClientResponse:
-    async with client.get(url, timeout=client_timeout) as resp:
+
+async def get_with_client(client: ClientSession, client_timeout: ClientTimeout, proxy_manager: Union[None, AbstractProxyManager]
+                          , url: str) -> ClientResponse:
+    proxy = await get_proxy_from_manager(proxy_manager)
+    async with client.get(url, timeout=client_timeout, proxy=proxy) as resp:
         try:
             html = await resp.read()
         except ClientError:

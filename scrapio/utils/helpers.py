@@ -2,6 +2,14 @@ from typing import Union, Dict
 
 from aiohttp import ClientResponse, ClientSession
 
+from scrapio.structures.proxies import AbstractProxyManager
+
+
+async def get_proxy_from_manager(proxy_manager: Union[AbstractProxyManager, None]) -> Union[str, None]:
+    if proxy_manager:
+        return await proxy_manager.get_proxy()
+    return None
+
 
 def create_client_session(headers: Union[None, Dict[str, str]], timeout=30) -> ClientSession:
     d_headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',

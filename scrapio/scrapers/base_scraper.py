@@ -8,6 +8,7 @@ from aiohttp import ClientSession, ClientResponse, ClientTimeout
 from scrapio.parsing.links import link_extractor
 from scrapio.requests.get import get_with_client
 from scrapio.structures.queues import TimeoutQueue, URLQueue
+from scrapio.structures.proxies import AbstractProxyManager
 from scrapio.structures.filtering import URLFilter
 from scrapio.utils.helpers import create_client_session
 
@@ -20,6 +21,7 @@ class BaseScraper:
         self._client_timeout: Union[None, ClientTimeout] = None
         self._timeout: Union[int, None] = None
 
+        self._proxy_manager: Union[None, AbstractProxyManager] = kwargs.get('proxy_manager')
         self._url_filter = URLFilter(start_url, kwargs.get('additional_rules', []), kwargs.get('follow_robots', True))
 
         self._request_queue = URLQueue(max_crawl_size)
@@ -60,7 +62,7 @@ class BaseScraper:
             try:
                 url = await self._request_queue.get_max_wait(30)
                 self._logger.info('Thread: {}, Requesting URL: {}'.format(consumer, url))
-                resp = await get_with_client(self._client, self._client_timeout, url)
+                resp = await get_with_client(self._client, self._client_timeout, self._proxy_manager, url)
                 self._parse_queue.put_nowait(resp)
             except asyncio.TimeoutError:
                 self._logger.info('Thread: {}, No more URLs, Consumer shutting down'.format(consumer))
