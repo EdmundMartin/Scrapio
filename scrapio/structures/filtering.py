@@ -46,6 +46,6 @@ class URLFilter(AbstractURLFilter):
             return robots_rules.can_fetch('*', url)
         if self._additional_rules:
             value = any(i in url for i in self._additional_rules)
-            if value is False:
-                return True
+            if value is True:
+                return False
         return host in self._net_loclations

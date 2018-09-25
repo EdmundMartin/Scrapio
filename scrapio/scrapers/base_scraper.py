@@ -21,7 +21,8 @@ class BaseScraper:
         self._client_timeout: Union[None, ClientTimeout] = None
         self._timeout: Union[int, None] = None
 
-        self._proxy_manager: Union[None, AbstractProxyManager] = kwargs.get('proxy_manager')
+        self._proxy_manager: \
+            Union[None, AbstractProxyManager] = kwargs.get('proxy_manager')(**kwargs) if kwargs.get('proxy_manager') else None
         self._url_filter = URLFilter(start_url, kwargs.get('additional_rules', []), kwargs.get('follow_robots', True))
 
         self._request_queue = URLQueue(max_crawl_size)

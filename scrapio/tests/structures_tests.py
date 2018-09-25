@@ -1,8 +1,10 @@
 import unittest
 import asyncio
+from urllib.parse import urlparse
 
-from scrapio.structures import AbstractProxyManager, RoundRobinProxy
-from scrapio.structures import TimeoutQueue
+from scrapio.structures.proxies import AbstractProxyManager, RoundRobinProxy
+from scrapio.structures.queues import TimeoutQueue
+from scrapio.structures.filtering import URLFilter
 
 
 class TestRoundRobinProxy(unittest.TestCase):
@@ -36,3 +38,33 @@ class TestTimeOutQueue(unittest.TestCase):
     def test_timeout(self):
         with self.assertRaises(asyncio.TimeoutError):
             self.loop.run_until_complete(self.run_timeout_queue(1))
+
+
+class TestURLFiltering(unittest.TestCase):
+
+    def test_can_crawl_crawlable_url(self):
+        test_filter = URLFilter([urlparse('http://www.example.com').netloc], None, False)
+        can_crawl = test_filter.can_crawl('www.example.com', 'http://example.com/something/something-else')
+        self.assertTrue(can_crawl)
+
+    def test_can_crawl_do_not_crawl(self):
+        test_filter = URLFilter([urlparse('http://www.example.com').netloc], None, False)
+        can_crawl = test_filter.can_crawl('www.no-crawl.com', 'http://www.no-crawl.com')
+        self.assertFalse(can_crawl)
+
+    def test_can_crawl_crawlable_url_additional_rules(self):
+        test_filter = URLFilter([urlparse('http://www.example1.com').netloc, urlparse('http://www.example2.com').netloc],
+                                ['/adult-content', 'example2.com/product'], False)
+        can_crawl = test_filter.can_crawl('www.example1.com', 'http://www.example1.com/something-good')
+        self.assertTrue(can_crawl)
+        can_crawl = test_filter.can_crawl('www.example2.com', 'http://www.example2.com/something-good')
+        self.assertTrue(can_crawl)
+
+    def test_can_crawl_do_not_crawl_additional_rules(self):
+        test_filter = URLFilter(
+            [urlparse('http://www.example1.com').netloc, urlparse('http://www.example2.com').netloc],
+            ['/adult-content', 'example2.com/product'], False)
+        can_crawl = test_filter.can_crawl('www.example1.com', 'http://www.example1.com/adult-content')
+        self.assertFalse(can_crawl)
+        can_crawl = test_filter.can_crawl('www.example2.com', 'http://www.example2.com/product-101')
+        self.assertFalse(can_crawl)
