@@ -4,7 +4,7 @@ import logging
 try:
     import motor.motor_asyncio as motor_async
 except ImportError:
-    ImportError("Motor is required to use MongoMixins")
+    ImportError("motor is required to use MongoMixin")
 
 
 class MongoMixin:

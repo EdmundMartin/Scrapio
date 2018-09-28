@@ -1,5 +1,5 @@
 from typing import List
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin, urldefrag
 
 from aiohttp import ClientResponse
 import lxml.html as lh
@@ -15,6 +15,8 @@ def link_extractor(response: ClientResponse, url_filter: URLFilter, defrag: bool
     found_urls = []
     for href in dom.xpath('//a/@href'):
         url = urljoin(str(req_url), href)
+        if defrag:
+            url = urldefrag(url)[0]
         netloc = urlparse(url).netloc
         can_crawl = url_filter.can_crawl(netloc, url)
         if can_crawl and valid_url(url):
