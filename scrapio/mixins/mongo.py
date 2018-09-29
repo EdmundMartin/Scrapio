@@ -1,4 +1,3 @@
-from collections import Iterable
 import logging
 
 try:
@@ -16,14 +15,14 @@ class MongoMixin:
 
     async def save_results(self, result):
         connection = self.__getattribute__('mongo_connection')
-        if isinstance(result, Iterable):
-            try:
-                await connection.insert_many(result)
-            except Exception as e:
-                logger = logging.getLogger('Scraper')
-                logger.warning('Exception inserting documents into collection: {}'.format(e))
+        if isinstance(result, list):
+            exc_func = connection.insert_many
+        elif isinstance(result, dict):
+            exc_func = connection.insert_one
+        else:
+            raise TypeError("Result must be list of dictionary objects, BSONObject or a plain dictionary")
         try:
-            await connection.insert(result)
+            await exc_func(result)
         except Exception as e:
             logger = logging.getLogger('Scraper')
             logger.warning('Exception inserting document into collection: {}'.format(e))
