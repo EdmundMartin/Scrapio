@@ -13,12 +13,14 @@ class AbstractURLFilter(ABC):
 
 class URLFilter(AbstractURLFilter):
 
-    def __init__(self, net_locations: List[str], additional_rules: Union[List[str], None], follow_robots: bool):
+    def __init__(self, net_locations: List[str], additional_rules: Union[List[str], None], follow_robots: bool,
+                 defragment: bool = True):
         self._net_loclations = net_locations
         self._additional_rules = additional_rules
         self._robots = follow_robots
         if follow_robots:
             self._robots_cache = self._gather_robots_files()
+        self.defragment = defragment
 
     def _gather_robots_files(self) -> Dict[str, RobotFileParser]:
         robot_cache = dict()

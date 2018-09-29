@@ -79,7 +79,7 @@ class BaseScraper:
             try:
                 loop = asyncio.get_event_loop()
                 resp = await self._parse_queue.get_max_wait(30)
-                links = await loop.run_in_executor(self._executor, link_extractor, resp, self._url_filter, True)
+                links = await loop.run_in_executor(self._executor, link_extractor, resp, self._url_filter)
                 parsed_data = await loop.run_in_executor(self._executor, self.parse_result, resp)
                 await self.save_results(parsed_data)
                 for link in links:
