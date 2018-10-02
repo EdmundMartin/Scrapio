@@ -39,6 +39,10 @@ class URLFilter(AbstractURLFilter):
         return robot_cache
 
     def can_crawl(self, host: str, url: str) -> bool:
+        if self._additional_rules:
+            value = any(i in url for i in self._additional_rules)
+            if value is True:
+                return False
         if self._robots:
             robots_rules = self._robots_cache.get(host)
             if robots_rules is None and host in self._net_loclations:
@@ -46,8 +50,4 @@ class URLFilter(AbstractURLFilter):
             elif robots_rules is None:
                 return False
             return robots_rules.can_fetch('*', url)
-        if self._additional_rules:
-            value = any(i in url for i in self._additional_rules)
-            if value is True:
-                return False
         return host in self._net_loclations

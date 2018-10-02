@@ -23,7 +23,12 @@ class BaseScraper:
 
         self._proxy_manager: \
             Union[None, AbstractProxyManager] = kwargs.get('proxy_manager')(**kwargs) if kwargs.get('proxy_manager') else None
-        self._url_filter = URLFilter(start_url, kwargs.get('additional_rules', []), kwargs.get('follow_robots', True))
+
+        custom_filter = kwargs.get('custom_filter')
+        if custom_filter and issubclass(custom_filter, URLFilter):
+            self._url_filter = custom_filter(start_url, kwargs.get('additional_rules', []), kwargs.get('follow_robots'), True)
+        else:
+            self._url_filter = URLFilter(start_url, kwargs.get('additional_rules', []), kwargs.get('follow_robots', True))
 
         self._request_queue = URLQueue(max_crawl_size)
         self._parse_queue = TimeoutQueue()
