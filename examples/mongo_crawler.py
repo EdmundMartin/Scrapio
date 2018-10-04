@@ -2,7 +2,7 @@ from collections import defaultdict
 from lxml import html as lh
 
 from scrapio.mixins.mongo import MongoMixin
-from scrapio.scrapers.base_scraper import BaseScraper
+from scrapio.scrapers import BaseScraper
 from scrapio.utils.helpers import response_to_html
 
 

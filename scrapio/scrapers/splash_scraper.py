@@ -1,9 +1,14 @@
 import asyncio
-from typing import Union
 from urllib.parse import urljoin
 
 from scrapio.scrapers.base_scraper import BaseScraper
 from scrapio.requests.get import get_with_splash
+
+
+__all__ = [
+    'SplashConfiguration',
+    'SplashScraper',
+]
 
 
 class SplashConfiguration:

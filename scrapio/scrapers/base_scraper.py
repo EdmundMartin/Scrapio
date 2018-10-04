@@ -13,6 +13,11 @@ from scrapio.structures.filtering import URLFilter
 from scrapio.utils.helpers import create_client_session
 
 
+__all__ = [
+    'BaseScraper'
+]
+
+
 class BaseScraper:
 
     def __init__(self, start_url: Union[List[str], str], max_crawl_size=None, **kwargs):

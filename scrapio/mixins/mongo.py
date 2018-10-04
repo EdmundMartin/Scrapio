@@ -6,6 +6,11 @@ except ImportError:
     ImportError("motor is required to use MongoMixin")
 
 
+__all__ = [
+    'MongoMixin',
+]
+
+
 class MongoMixin:
 
     def create_mongo_client(self, connection_string: str, database: str, collection: str) -> None:

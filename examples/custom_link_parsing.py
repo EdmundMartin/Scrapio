@@ -2,7 +2,7 @@ from collections import defaultdict
 
 import aiofiles # external dependency
 import lxml.html as lh
-from scrapio.scrapers.base_scraper import BaseScraper
+from scrapio.scrapers import BaseScraper
 from scrapio.utils.helpers import response_to_html
 from scrapio.structures.filtering import URLFilter
 

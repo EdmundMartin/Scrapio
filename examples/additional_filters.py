@@ -1,8 +1,8 @@
 from collections import defaultdict
 
-#import aiofiles # external dependency
+import aiofiles # external dependency
 import lxml.html as lh
-from scrapio.scrapers.base_scraper import BaseScraper
+from scrapio.scrapers import BaseScraper
 from scrapio.utils.helpers import response_to_html
 from scrapio.structures.filtering import URLFilter
 
@@ -33,14 +33,11 @@ class OurScraper(BaseScraper):
 
     async def save_results(self, result):
         if result:
-            """
             async with aiofiles.open('example_output.csv', 'a') as f:
                 url = result.get('url')
                 title = result.get('title')
                 h1 = result.get('h1')
                 await f.write('"{}","{}","{}"\n'.format(url, title, h1))
-            """
-            print(result)
 
 
 if __name__ == '__main__':
