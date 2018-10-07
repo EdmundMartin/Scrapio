@@ -45,7 +45,7 @@ class SplashScraper(BaseScraper):
                 if proxy:
                     splash_location += '&proxy={}'.format(proxy)
                 resp = await get_with_splash(self._client, self._client_timeout, splash_location)
-                resp._url = url # Splah unfortunately loses the URL redirect information from the request
+                resp._url = url # Splash unfortunately loses the URL redirect information from the request
                 self._parse_queue.put_nowait(resp)
             except asyncio.TimeoutError:
                 self._logger.info('Thread: {}, No more URLs, Consumer shutting down'.format(consumer))

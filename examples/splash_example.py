@@ -1,12 +1,12 @@
 from collections import defaultdict
 
-import aiofiles # external dependency
 import lxml.html as lh
-from scrapio.scrapers import BaseScraper
+
+from scrapio.scrapers import SplashConfiguration, SplashScraper
 from scrapio.utils.helpers import response_to_html
 
 
-class OurScraper(BaseScraper):
+class ExampleSplashScraper(SplashScraper):
 
     def parse_result(self, response):
         html = response_to_html(response)
@@ -23,14 +23,9 @@ class OurScraper(BaseScraper):
         return result
 
     async def save_results(self, result):
-        if result:
-            async with aiofiles.open('example_output.csv', 'a') as f:
-                url = result.get('url')
-                title = result.get('title')
-                h1 = result.get('h1')
-                await f.write('"{}","{}","{}"\n'.format(url, title, h1))
+        print(result)
 
 
 if __name__ == '__main__':
-    scraper = OurScraper.create_scraper('http://edmundmartin.com', additional_rules=['golang', 'replyto'])
-    scraper.run_scraper(10, 2)
+    splash_config = SplashConfiguration('http://localhost:8090', 30, 10)
+    scraper = ExampleSplashScraper.create_scraper(splash_config, 'http://edmundmartin.com')

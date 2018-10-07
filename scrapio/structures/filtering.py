@@ -48,6 +48,6 @@ class URLFilter(AbstractURLFilter):
             if robots_rules is None and host in self._net_loclations:
                 return True
             elif robots_rules is None:
-                return False
+                return True
             return robots_rules.can_fetch('*', url)
         return host in self._net_loclations
