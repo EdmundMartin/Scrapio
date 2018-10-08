@@ -11,7 +11,7 @@ from scrapio.parsing.valid_url import valid_url
 def link_extractor(response: ClientResponse, url_filter: URLFilter) -> List[str]:
     defrag = url_filter.__getattribute__('defragment')
     html = response._body.decode('utf-8', errors='ignore')
-    req_url = response.url
+    req_url = response._url
     dom = lh.fromstring(html)
     found_urls = []
     for href in dom.xpath('//a/@href'):

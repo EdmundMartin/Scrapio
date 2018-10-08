@@ -96,10 +96,11 @@ class SplashScraper:
             try:
                 url = await self._request_queue.get_max_wait(30)
                 self._logger.info('Thread: {}, Requesting URL: {}'.format(consumer, url))
-                splash_location = self.splash_configuration.splash_url.format(url)
-                proxy = await self._proxy_manager.get_proxy()
-                if proxy:
-                    splash_location += '&proxy={}'.format(proxy)
+                splash_location = self.splash_configuration.splash_url.format(url=url)
+                if self._proxy_manager:
+                    proxy = await self._proxy_manager.get_proxy()
+                    if proxy:
+                        splash_location += '&proxy={}'.format(proxy)
                 resp = await get_with_splash(self._client, self._client_timeout, splash_location)
                 resp._url = url # Splash unfortunately loses the URL redirect information from the request
                 self._parse_queue.put_nowait(resp)
@@ -129,6 +130,7 @@ class SplashScraper:
                 self._logger.warning('Parser: {}, Encountered exception: {}'.format(consumer, e))
 
     def run_scraper(self, request_workers: int, parse_workers: int) -> None:
+        print('running')
         request_group = asyncio.gather(*[self.__consume_request_queue(i) for i in range(request_workers)])
         parser_group = asyncio.gather(*[self.__consume_parse_queue(i) for i in range(parse_workers)])
 
