@@ -44,6 +44,16 @@ class BaseScraper:
 
         self.__remaining_coroutines = 0
 
+    def _get_best_event_loop(self):
+        try:
+            import uvloop
+        except ImportError as e:
+            self._logger.info('No UVLoop reverting to base event loop implementation')
+            return asyncio.get_event_loop()
+        else:
+            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+            return asyncio.get_event_loop()
+
     @classmethod
     def create_scraper(cls, *args, timeout=30, user_agent=None, **kwargs):
         self = cls(*args, **kwargs)
@@ -104,7 +114,7 @@ class BaseScraper:
         request_group = asyncio.gather(*[self.__consume_request_queue(i) for i in range(request_workers)])
         parser_group = asyncio.gather(*[self.__consume_parse_queue(i) for i in range(parse_workers)])
 
-        loop = asyncio.get_event_loop()
+        loop = self._get_best_event_loop()
         try:
             all_groups = asyncio.gather(request_group, parser_group)
             loop.run_until_complete(all_groups)
