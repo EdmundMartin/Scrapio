@@ -47,7 +47,6 @@ class URLFilter(AbstractURLFilter):
             robots_rules = self._robots_cache.get(host)
             if robots_rules is None and host in self._net_loclations:
                 return True
-            elif robots_rules is None:
-                return True
-            return robots_rules.can_fetch('*', url)
+            if robots_rules:
+                return robots_rules.can_fetch('*', url) and host in self._net_loclations
         return host in self._net_loclations

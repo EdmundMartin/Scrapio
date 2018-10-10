@@ -27,7 +27,6 @@ class ExampleSplashScraper(SplashScraper):
 
 
 if __name__ == '__main__':
-    import ipdb; ipdb.set_trace()
-    splash_config = SplashConfiguration('http://localhost:8090', 30, 10)
+    splash_config = SplashConfiguration('http://localhost:8050', 30, 10)
     scraper = ExampleSplashScraper.create_scraper(splash_config, 'http://edmundmartin.com')
     scraper.run_scraper(10, 2)
