@@ -1,5 +1,5 @@
 # Scrapio
-Asyncio web scraping framework. The project aims to make easy to write a highly performant scrapers with little knowledge of asyncio, while giving enough flexibility so that users can customise behaviour of their scrapers.
+Asyncio web scraping framework. The project aims to make easy to write a highly performant scrapers with little knowledge of asyncio, while giving enough flexibility so that users can customise behaviour of their scrapers. It also supports Uvloop, and can be used in conjunction with Splash the JavaScript rendering solution from ScrapingHub.
 
 ## Install
 ```
