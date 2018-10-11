@@ -26,6 +26,7 @@ class BaseScraper:
         self._client_timeout: Union[None, ClientTimeout] = None
         self._timeout: Union[int, None] = None
 
+        self._queue_timeout = kwargs.get('queue_timeout', 30)
         self._proxy_manager: \
             Union[None, AbstractProxyManager] = kwargs.get('proxy_manager')(**kwargs) if kwargs.get('proxy_manager') else None
 
@@ -81,7 +82,7 @@ class BaseScraper:
         self.__remaining_coroutines += 1
         while True:
             try:
-                url = await self._request_queue.get_max_wait(30)
+                url = await self._request_queue.get_max_wait(self._queue_timeout)
                 self._logger.info('Thread: {}, Requesting URL: {}'.format(consumer, url))
                 resp = await get_with_client(self._client, self._client_timeout, self._proxy_manager, url)
                 self._parse_queue.put_nowait(resp)
@@ -98,7 +99,7 @@ class BaseScraper:
         while True:
             try:
                 loop = asyncio.get_event_loop()
-                resp = await self._parse_queue.get_max_wait(30)
+                resp = await self._parse_queue.get_max_wait(self._queue_timeout)
                 links = await loop.run_in_executor(self._executor, link_extractor, resp, self._url_filter)
                 parsed_data = await loop.run_in_executor(self._executor, self.parse_result, resp)
                 await self.save_results(parsed_data)
