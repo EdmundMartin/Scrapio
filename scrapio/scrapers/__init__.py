@@ -1,7 +1,7 @@
-from .base_scraper import *
-from .splash_scraper import *
+from .base_crawler import *
+from .splash_crawler import *
 
 __all__ = [
-    splash_scraper.__all__ +
-    base_scraper.__all__
+    splash_crawler.__all__ +
+    base_crawler.__all__
 ]

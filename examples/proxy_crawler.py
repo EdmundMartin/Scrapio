@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from scrapio.scrapers import BaseScraper
+from scrapio.scrapers import BaseCrawler
 from scrapio.structures.proxies import AbstractProxyManager
 from scrapio.utils.helpers import response_to_html
 import lxml.html as lh
@@ -15,7 +15,7 @@ class OurProxyManager(AbstractProxyManager):
         return 'http://95.105.90.117:60444'
 
 
-class OurProxyScraper(BaseScraper):
+class OurProxyScraper(BaseCrawler):
 
     def parse_result(self, response):
         html = response_to_html(response)
@@ -37,4 +37,4 @@ class OurProxyScraper(BaseScraper):
 
 if __name__ == '__main__':
     scraper = OurProxyScraper.create_scraper('https://www.zoopla.co.uk', proxy_manager=OurProxyManager)
-    scraper.run_scraper(10, 2)
+    scraper.run_scraper(10)

@@ -2,11 +2,11 @@ from collections import defaultdict
 
 import lxml.html as lh
 
-from scrapio.scrapers import SplashConfiguration, SplashScraper
+from scrapio.scrapers import SplashConfiguration, SplashCrawler
 from scrapio.utils.helpers import response_to_html
 
 
-class ExampleSplashScraper(SplashScraper):
+class ExampleSplashScraper(SplashCrawler):
 
     def parse_result(self, response):
         html = response_to_html(response)
@@ -29,4 +29,4 @@ class ExampleSplashScraper(SplashScraper):
 if __name__ == '__main__':
     splash_config = SplashConfiguration('http://localhost:8050', 30, 10)
     scraper = ExampleSplashScraper.create_scraper(splash_config, 'http://edmundmartin.com')
-    scraper.run_scraper(10, 2)
+    scraper.run_scraper(10)

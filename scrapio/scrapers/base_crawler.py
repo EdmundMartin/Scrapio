@@ -14,11 +14,11 @@ from scrapio.utils.helpers import create_client_session
 
 
 __all__ = [
-    'BaseScraper'
+    'BaseCrawler'
 ]
 
 
-class BaseScraper:
+class BaseCrawler:
 
     def __init__(self, start_url: Union[List[str], str], max_crawl_size=None, **kwargs):
         self._start_url = start_url
@@ -46,8 +46,8 @@ class BaseScraper:
     def _get_best_event_loop(self):
         try:
             import uvloop
-        except ImportError as e:
-            self._logger.info('No UVLoop reverting to base event loop implementation')
+        except ImportError:
+            self._logger.info('Uvloop not found reverting to base event loop implementation')
             return asyncio.get_event_loop()
         else:
             asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())

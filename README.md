@@ -14,11 +14,11 @@ from collections import defaultdict
 
 import aiofiles # external dependency
 import lxml.html as lh
-from scrapio.scrapers.base_scraper import BaseScraper
+from scrapio.scrapers.base_crawler import BaseCrawler
 from scrapio.utils.helpers import response_to_html
 
 
-class OurScraper(BaseScraper):
+class OurScraper(BaseCrawler):
 
     def parse_result(self, response):
         html = response_to_html(response)
@@ -51,12 +51,12 @@ The above represents a fully functional scraper using the Scrapio framework. We 
 
 ## Custom Link Parsing
 The default behaviour of the link parser can be overwriting the behaviour of the base link parsing class as is outlined in the example below.
-```python3
+```python
 from collections import defaultdict
 
 import aiofiles # external dependency
 import lxml.html as lh
-from scrapio.scrapers import BaseScraper
+from scrapio.scrapers import BaseCrawler
 from scrapio.utils.helpers import response_to_html
 from scrapio.structures.filtering import URLFilter
 
@@ -69,7 +69,7 @@ class PythonURLFilter(URLFilter):
         return False
 
 
-class OurScraper(BaseScraper):
+class OurScraper(BaseCrawler):
 
     def parse_result(self, response):
         html = response_to_html(response)
@@ -96,5 +96,41 @@ class OurScraper(BaseScraper):
 
 if __name__ == '__main__':
     scraper = OurScraper.create_scraper('http://edmundmartin.com', custom_filter=PythonURLFilter)
+    scraper.run_scraper(10, 2)
+```
+
+## Splash Crawler
+```python
+from collections import defaultdict
+
+import lxml.html as lh
+
+from scrapio.scrapers import SplashConfiguration, SplashCrawler
+from scrapio.utils.helpers import response_to_html
+
+
+class ExampleSplashScraper(SplashCrawler):
+
+    def parse_result(self, response):
+        html = response_to_html(response)
+        dom = lh.fromstring(html)
+
+        result = defaultdict(lambda: "N/A")
+        result['url'] = response.url
+        title = dom.cssselect('title')
+        h1 = dom.cssselect('h1')
+        if title:
+            result['title'] = title[0].text_content()
+        if h1:
+            result['h1'] = h1[0].text_content()
+        return result
+
+    async def save_results(self, result):
+        print(result)
+
+
+if __name__ == '__main__':
+    splash_config = SplashConfiguration('http://localhost:8050', 30, 10)
+    scraper = ExampleSplashScraper.create_scraper(splash_config, 'http://edmundmartin.com')
     scraper.run_scraper(10, 2)
 ```

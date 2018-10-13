@@ -2,11 +2,11 @@ from collections import defaultdict
 
 import aiofiles # external dependency
 import lxml.html as lh
-from scrapio.scrapers import BaseScraper
+from scrapio.scrapers import BaseCrawler
 from scrapio.utils.helpers import response_to_html
 
 
-class OurScraper(BaseScraper):
+class OurScraper(BaseCrawler):
 
     def parse_result(self, response):
         html = response_to_html(response)
@@ -33,4 +33,4 @@ class OurScraper(BaseScraper):
 
 if __name__ == '__main__':
     scraper = OurScraper.create_scraper('http://edmundmartin.com', additional_rules=['golang', 'replyto'])
-    scraper.run_scraper(10, 2)
+    scraper.run_scraper(10)
