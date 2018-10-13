@@ -2,11 +2,11 @@ from collections import defaultdict
 from lxml import html as lh
 
 from scrapio.mixins.mongo import MongoMixin
-from scrapio.scrapers import BaseScraper
+from scrapio.scrapers import BaseCrawler
 from scrapio.utils.helpers import response_to_html
 
 
-class OurMongoScraper(MongoMixin, BaseScraper):
+class OurMongoScraper(MongoMixin, BaseCrawler):
 
     def parse_result(self, response):
         html = response_to_html(response)
@@ -26,4 +26,4 @@ class OurMongoScraper(MongoMixin, BaseScraper):
 if __name__ == '__main__':
     crawler = OurMongoScraper.create_scraper('http://edmundmartin.com')
     crawler.create_mongo_client('mongodb://localhost:27017/', 'example', 'crawl')
-    crawler.run_scraper(10, 2)
+    crawler.run_scraper(10)

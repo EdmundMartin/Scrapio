@@ -15,7 +15,7 @@ from scrapio.utils.helpers import create_client_session
 
 __all__ = [
     'SplashConfiguration',
-    'SplashScraper',
+    'SplashCrawler',
 ]
 
 
@@ -36,7 +36,7 @@ class SplashConfiguration:
         return '{}{}'.format(base_url, url_el)
 
 
-class SplashScraper:
+class SplashCrawler:
 
     def __init__(self, spalsh_configuration: SplashConfiguration,  start_url: Union[List[str], str],
                  max_crawl_size=None, **kwargs):
