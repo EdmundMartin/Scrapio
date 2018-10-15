@@ -45,7 +45,7 @@ class OurScraper(BaseCrawler):
 
 if __name__ == '__main__':
     scraper = OurScraper.create_scraper('http://edmundmartin.com')
-    scraper.run_scraper(10, 2)
+    scraper.run_scraper(10)
 ```
 The above represents a fully functional scraper using the Scrapio framework. We overide the parse_result and save_results from the base scraper class. We then initialize the crawler with our start URL and set the number of scraping processes and the number of parsing processes.
 
@@ -96,7 +96,7 @@ class OurScraper(BaseCrawler):
 
 if __name__ == '__main__':
     scraper = OurScraper.create_scraper('http://edmundmartin.com', custom_filter=PythonURLFilter)
-    scraper.run_scraper(10, 2)
+    scraper.run_scraper(10)
 ```
 
 ## Splash Crawler
@@ -132,5 +132,5 @@ class ExampleSplashScraper(SplashCrawler):
 if __name__ == '__main__':
     splash_config = SplashConfiguration('http://localhost:8050', 30, 10)
     scraper = ExampleSplashScraper.create_scraper(splash_config, 'http://edmundmartin.com')
-    scraper.run_scraper(10, 2)
+    scraper.run_scraper(10)
 ```
