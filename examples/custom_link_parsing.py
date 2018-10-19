@@ -41,5 +41,5 @@ class OurScraper(BaseCrawler):
 
 
 if __name__ == '__main__':
-    scraper = OurScraper.create_scraper('http://edmundmartin.com', custom_filter=PythonURLFilter)
+    scraper = OurScraper('http://edmundmartin.com', custom_filter=PythonURLFilter)
     scraper.run_scraper(10)

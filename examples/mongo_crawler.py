@@ -24,6 +24,6 @@ class OurMongoScraper(MongoMixin, BaseCrawler):
 
 
 if __name__ == '__main__':
-    crawler = OurMongoScraper.create_scraper('http://edmundmartin.com')
+    crawler = OurMongoScraper('http://edmundmartin.com')
     crawler.create_mongo_client('mongodb://localhost:27017/', 'example', 'crawl')
     crawler.run_scraper(10)

@@ -28,5 +28,5 @@ class ExampleSplashScraper(SplashCrawler):
 
 if __name__ == '__main__':
     splash_config = SplashConfiguration('http://localhost:8050', 30, 10)
-    scraper = ExampleSplashScraper.create_scraper(splash_config, 'http://edmundmartin.com')
+    scraper = ExampleSplashScraper(splash_config, 'http://edmundmartin.com')
     scraper.run_scraper(10)

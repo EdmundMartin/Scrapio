@@ -32,5 +32,5 @@ class OurScraper(BaseCrawler):
 
 
 if __name__ == '__main__':
-    scraper = OurScraper.create_scraper('http://edmundmartin.com', additional_rules=['golang', 'replyto'])
+    scraper = OurScraper('http://edmundmartin.com', additional_rules=['golang', 'replyto'])
     scraper.run_scraper(10)

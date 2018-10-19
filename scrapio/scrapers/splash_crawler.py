@@ -39,7 +39,7 @@ class SplashConfiguration:
 class SplashCrawler:
 
     def __init__(self, spalsh_configuration: SplashConfiguration,  start_url: Union[List[str], str],
-                 max_crawl_size=None, **kwargs):
+                 max_crawl_size: Union[int, None] = None, timeout=30, user_agent=None,  **kwargs):
         self.splash_configuration = spalsh_configuration
         self._start_url = start_url
         self._client: Union[None, ClientSession] = None
@@ -64,22 +64,6 @@ class SplashCrawler:
         logging.basicConfig(level=logging.DEBUG, format='%(message)s')
         self._logger = kwargs.get('logger', logging.getLogger("Scraper"))
 
-        self.__remaining_coroutines = 0
-
-    def _get_best_event_loop(self):
-        try:
-            import uvloop
-        except ImportError:
-            self._logger.info('No UVLoop reverting to base event loop implementation')
-            return asyncio.get_event_loop()
-        else:
-            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-            return asyncio.get_event_loop()
-
-    @classmethod
-    def create_scraper(cls, *args, timeout=30, user_agent=None, **kwargs):
-        self = cls(*args, **kwargs)
-        self._client = create_client_session(user_agent)
         self._timeout = timeout
         if kwargs.get('client_timeout_rules') and isinstance('client_timeout_rules', dict):
             rules = kwargs.get('client_timeout_rules')
@@ -91,7 +75,25 @@ class SplashCrawler:
                 self._task_queue.put_nowait(('Request', i))
         elif isinstance(self._start_url, str):
             self._task_queue.put_nowait(('Request', self._start_url))
-        return self
+
+        self.__remaining_coroutines = 0
+        self.__user_agent = user_agent
+        self.__creation_semaphore = asyncio.BoundedSemaphore(1)
+
+    async def __create_client_session(self):
+        async with self.__creation_semaphore:
+            if self._client is None:
+                self._client = create_client_session(self.__user_agent)
+
+    def _get_best_event_loop(self):
+        try:
+            import uvloop
+        except ImportError:
+            self._logger.info('No UVLoop reverting to base event loop implementation')
+            return asyncio.get_event_loop()
+        else:
+            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+            return asyncio.get_event_loop()
 
     def parse_result(self, response: ClientResponse) -> Any:
         raise NotImplementedError
@@ -100,6 +102,7 @@ class SplashCrawler:
         raise NotImplementedError
 
     async def __consume_queue(self, consumer: int):
+        await self.__create_client_session()
         self.__remaining_coroutines += 1
         while True:
             try:
