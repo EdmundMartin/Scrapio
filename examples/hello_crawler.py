@@ -3,13 +3,11 @@ from collections import defaultdict
 #import aiofiles # external dependency
 import lxml.html as lh
 from scrapio.scrapers import BaseCrawler
-from scrapio.utils.helpers import response_to_html
 
 
 class OurScraper(BaseCrawler):
 
-    def parse_result(self, response):
-        html = response_to_html(response)
+    def parse_result(self, html, response):
         dom = lh.fromstring(html)
 
         result = defaultdict(lambda: "N/A")

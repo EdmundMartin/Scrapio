@@ -8,8 +8,7 @@ from scrapio.structures.filtering import AbstractURLFilter, URLFilter
 from scrapio.parsing.valid_url import valid_url
 
 
-def link_extractor(response: ClientResponse, url_filter: URLFilter) -> List[str]:
-    defrag = url_filter.__getattribute__('defragment')
+def link_extractor(response: ClientResponse, url_filter: URLFilter, defrag: bool) -> (str, List[str]):
     html = response._body.decode('utf-8', errors='ignore')
     req_url = response._url
     dom = lh.fromstring(html)
@@ -22,4 +21,4 @@ def link_extractor(response: ClientResponse, url_filter: URLFilter) -> List[str]
         can_crawl = url_filter.can_crawl(netloc, url)
         if can_crawl and valid_url(url):
             found_urls.append(url)
-    return found_urls
+    return html, found_urls

@@ -15,10 +15,11 @@ class JobQueue(asyncio.Queue):
     async def put_unique_url(self, url):
         async with self._seen_semaphore:
             if url not in self._seen_urls:
-                if self._max_crawl_size and self._page_count < self._max_crawl_size + 1:
+                if self._max_crawl_size and self._page_count < self._max_crawl_size:
                     await self.put(('Request', url))
                 elif self._max_crawl_size is None:
                     await self.put(('Request', url))
+                self._page_count += 1
             self._seen_urls.add(url)
 
     async def put_parse_request(self, response):

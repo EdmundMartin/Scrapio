@@ -17,8 +17,7 @@ class OurProxyManager(AbstractProxyManager):
 
 class OurProxyScraper(BaseCrawler):
 
-    def parse_result(self, response):
-        html = response_to_html(response)
+    def parse_result(self, html, response):
         dom = lh.fromstring(html)
 
         result = defaultdict(lambda: "N/A")

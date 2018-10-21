@@ -20,7 +20,8 @@ __all__ = [
 
 class BaseCrawler:
 
-    def __init__(self, start_url: Union[List[str], str], max_crawl_size=None, timeout=30, user_agent=None, **kwargs):
+    def __init__(self, start_url: Union[List[str], str], max_crawl_size=None, timeout=30, user_agent=None,
+                 verbose=True, **kwargs):
         self._start_url = start_url
         self._client: Union[None, ClientSession] = None
         self._client_timeout: Union[None, ClientTimeout] = None
@@ -51,6 +52,7 @@ class BaseCrawler:
         else:
             self._client_timeout = ClientTimeout(total=float(self._timeout))
 
+        self.verbose = verbose
         self.__remaining_coroutines = 0
         self.__user_agent = user_agent
         self.__creation_semaphore = asyncio.BoundedSemaphore(1)
@@ -70,7 +72,7 @@ class BaseCrawler:
             asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
             return asyncio.get_event_loop()
 
-    def parse_result(self, response: ClientResponse) -> Any:
+    def parse_result(self, html: str, response: ClientResponse) -> Any:
         raise NotImplementedError
 
     async def save_results(self, result):
@@ -79,13 +81,14 @@ class BaseCrawler:
     async def __consume_queue(self, consumer: int):
         await self.__create_client_session()
         self.__remaining_coroutines += 1
+        defrag = self._url_filter.defragment
         while True:
             try:
                 task, item = await self._task_queue.get_next_job()
                 if task == 'Request':
                     await self._make_requests(consumer, item)
                 else:
-                    await self._parse_response(consumer, item)
+                    await self._parse_response(consumer, item, defrag)
                 self._task_queue.completed_task()
             except asyncio.QueueEmpty:
                 self._logger.info('Coroutine: {}, No more URLs, Consumer shutting down'.format(consumer))
@@ -99,17 +102,18 @@ class BaseCrawler:
 
     async def _make_requests(self, consumer: int, url: str):
         try:
-            self._logger.info('Coroutine: {}, Requesting URL: {}'.format(consumer, url))
+            if self.verbose:
+                self._logger.info('Coroutine: {}, Requesting URL: {}'.format(consumer, url))
             resp = await get_with_client(self._client, self._client_timeout, self._proxy_manager, url)
             self._task_queue.put_nowait(('Parse', resp))
         except Exception as e:
             self._logger.warning("Coroutine: {}, Encountered exception: {}".format(consumer, e))
 
-    async def _parse_response(self, consumer: int, response: ClientResponse) -> None:
+    async def _parse_response(self, consumer: int, response: ClientResponse, defrag: bool) -> None:
         try:
             loop = asyncio.get_event_loop()
-            links = await loop.run_in_executor(self._executor, link_extractor, response, self._url_filter)
-            parsed_data = await loop.run_in_executor(self._executor, self.parse_result, response)
+            html, links = await loop.run_in_executor(self._executor, link_extractor, response, self._url_filter, defrag)
+            parsed_data = await loop.run_in_executor(self._executor, self.parse_result, html, response)
             await self.save_results(parsed_data)
             for link in links:
                 await self._task_queue.put_unique_url(link)

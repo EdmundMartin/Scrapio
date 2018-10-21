@@ -3,13 +3,11 @@ from lxml import html as lh
 
 from scrapio.mixins.mongo import MongoMixin
 from scrapio.scrapers import BaseCrawler
-from scrapio.utils.helpers import response_to_html
 
 
 class OurMongoScraper(MongoMixin, BaseCrawler):
 
-    def parse_result(self, response):
-        html = response_to_html(response)
+    def parse_result(self, html, response):
         dom = lh.fromstring(html)
 
         result = defaultdict(lambda: "N/A")

@@ -3,13 +3,11 @@ from collections import defaultdict
 import lxml.html as lh
 
 from scrapio.scrapers import SplashConfiguration, SplashCrawler
-from scrapio.utils.helpers import response_to_html
 
 
 class ExampleSplashScraper(SplashCrawler):
 
-    def parse_result(self, response):
-        html = response_to_html(response)
+    def parse_result(self, html, response):
         dom = lh.fromstring(html)
 
         result = defaultdict(lambda: "N/A")

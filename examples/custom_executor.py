@@ -1,6 +1,7 @@
+from concurrent import futures
 from collections import defaultdict
 
-import aiofiles # external dependency
+#import aiofiles # external dependency
 import lxml.html as lh
 from scrapio.scrapers import BaseCrawler
 
@@ -11,7 +12,7 @@ class OurScraper(BaseCrawler):
         dom = lh.fromstring(html)
 
         result = defaultdict(lambda: "N/A")
-        result['url'] = response.url
+        result['url'] = response._url
         title = dom.cssselect('title')
         h1 = dom.cssselect('h1')
         if title:
@@ -22,13 +23,19 @@ class OurScraper(BaseCrawler):
 
     async def save_results(self, result):
         if result:
-            async with aiofiles.open('example_output.csv', 'a') as f:
+            """async with aiofiles.open('example_output.csv', 'a') as f:
                 url = result.get('url')
                 title = result.get('title')
                 h1 = result.get('h1')
-                await f.write('"{}","{}","{}"\n'.format(url, title, h1))
+                await f.write('"{}","{}","{}"\n'.format(url, title, h1))"""
+            print(result)
 
 
 if __name__ == '__main__':
-    scraper = OurScraper('http://edmundmartin.com', additional_rules=['golang', 'replyto'])
-    scraper.run_scraper(10)
+    import time
+    pool = futures.ThreadPoolExecutor(max_workers=10)
+    crawler = OurScraper('https://www.zoopla.co.uk', max_crawl_size=1000, verbose=False)
+    start = time.time()
+    crawler.run_scraper(100)
+    end = time.time() - start
+    print(end)
