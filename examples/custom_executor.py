@@ -2,19 +2,17 @@ from concurrent import futures
 from collections import defaultdict
 
 #import aiofiles # external dependency
-import lxml.html as lh
 from scrapio.scrapers import BaseCrawler
 
 
 class OurScraper(BaseCrawler):
 
-    def parse_result(self, html, response):
-        dom = lh.fromstring(html)
+    def parse_result(self, response):
 
         result = defaultdict(lambda: "N/A")
         result['url'] = response._url
-        title = dom.cssselect('title')
-        h1 = dom.cssselect('h1')
+        title = response.dom.cssselect('title')
+        h1 = response.dom.cssselect('h1')
         if title:
             result['title'] = title[0].text_content()
         if h1:
@@ -34,7 +32,7 @@ class OurScraper(BaseCrawler):
 if __name__ == '__main__':
     import time
     pool = futures.ThreadPoolExecutor(max_workers=10)
-    crawler = OurScraper('https://www.zoopla.co.uk', max_crawl_size=1000, verbose=False)
+    crawler = OurScraper('https://www.zoopla.co.uk', max_crawl_size=1000)
     start = time.time()
     crawler.run_scraper(100)
     end = time.time() - start

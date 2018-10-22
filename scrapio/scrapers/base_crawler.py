@@ -29,35 +29,44 @@ class BaseCrawler:
 
         self._proxy_manager: \
             Union[None, AbstractProxyManager] = kwargs.get('proxy_manager')(**kwargs) if kwargs.get('proxy_manager') else None
-        custom_filter = kwargs.get('custom_filter')
-        if custom_filter and issubclass(custom_filter, URLFilter):
-            self._url_filter = custom_filter(start_url, kwargs.get('additional_rules', []), kwargs.get('follow_robots'), True)
-        else:
-            self._url_filter = URLFilter(start_url, kwargs.get('additional_rules', []), kwargs.get('follow_robots', True))
+        self._url_filter = self._set_url_filter(start_url, **kwargs)
         self._task_queue = JobQueue(max_crawl_size=max_crawl_size)
 
         self._executor = kwargs.get('executor', None)
         logging.basicConfig(level=logging.DEBUG, format='%(message)s')
         self._logger = kwargs.get('logger', logging.getLogger("Scraper"))
-
-        if isinstance(self._start_url, list):
-            for i in self._start_url:
-                self._task_queue.put_nowait(('Request', i))
-        elif isinstance(self._start_url, str):
-            self._task_queue.put_nowait(('Request', self._start_url))
-        self._timeout = timeout
-        if kwargs.get('client_timeout_rules') and isinstance('client_timeout_rules', dict):
-            rules = kwargs.get('client_timeout_rules')
-            self._client_timeout = ClientTimeout(**rules)
-        else:
-            self._client_timeout = ClientTimeout(total=float(self._timeout))
+        self.__seed_url_queue(start_url)
+        self._client_timeout = self._setup_timeout_rules(timeout)
 
         self.verbose = verbose
         self.__remaining_coroutines = 0
         self.__user_agent = user_agent
         self.__creation_semaphore = asyncio.BoundedSemaphore(1)
 
-    async def __create_client_session(self):
+    @staticmethod
+    def _set_url_filter(start_url, **kwargs) -> URLFilter:
+        custom_filter = kwargs.get('custom_filter')
+        if custom_filter and issubclass(custom_filter, URLFilter):
+            return custom_filter(start_url, kwargs.get('additional_rules', []), kwargs.get('follow_robots', True),
+                                 kwargs.get('defragment_urls', True))
+        return URLFilter(start_url, kwargs.get('additional_rules', []), kwargs.get('follow_robots', True),
+                         kwargs.get('defragment_urls', True))
+
+    def __seed_url_queue(self, start_url) -> None:
+        if isinstance(start_url, str):
+            self._task_queue.put_nowait(('Request', start_url))
+        elif isinstance(start_url, (set, list)):
+            for item in start_url:
+                self._task_queue.put_nowait(('Request', item))
+
+    @staticmethod
+    def _setup_timeout_rules(timeout: Union[float, int], **kwargs) -> ClientTimeout:
+        if kwargs.get('client_timeout_rules') and isinstance('client_timeout_rules', dict):
+            rules = kwargs.get('client_timeout_rules')
+            return ClientTimeout(**rules)
+        return ClientTimeout(total=float(timeout))
+
+    async def __create_client_session(self) -> None:
         async with self.__creation_semaphore:
             if self._client is None:
                 self._client = create_client_session(self.__user_agent)
@@ -72,7 +81,7 @@ class BaseCrawler:
             asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
             return asyncio.get_event_loop()
 
-    def parse_result(self, html: str, response: ClientResponse) -> Any:
+    def parse_result(self, response: ClientResponse) -> Any:
         raise NotImplementedError
 
     async def save_results(self, result):
@@ -112,8 +121,8 @@ class BaseCrawler:
     async def _parse_response(self, consumer: int, response: ClientResponse, defrag: bool) -> None:
         try:
             loop = asyncio.get_event_loop()
-            html, links = await loop.run_in_executor(self._executor, link_extractor, response, self._url_filter, defrag)
-            parsed_data = await loop.run_in_executor(self._executor, self.parse_result, html, response)
+            response, links = await loop.run_in_executor(self._executor, link_extractor, response, self._url_filter, defrag)
+            parsed_data = await loop.run_in_executor(self._executor, self.parse_result, response)
             await self.save_results(parsed_data)
             for link in links:
                 await self._task_queue.put_unique_url(link)
