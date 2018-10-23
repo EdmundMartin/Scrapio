@@ -41,7 +41,7 @@ class BaseCrawler:
         self.verbose = verbose
         self.__remaining_coroutines = 0
         self.__user_agent = user_agent
-        self.__creation_semaphore = asyncio.BoundedSemaphore(1)
+        self._creation_semaphore = asyncio.BoundedSemaphore(1)
 
     @staticmethod
     def _set_url_filter(start_url, **kwargs) -> URLFilter:
@@ -66,8 +66,8 @@ class BaseCrawler:
             return ClientTimeout(**rules)
         return ClientTimeout(total=float(timeout))
 
-    async def __create_client_session(self) -> None:
-        async with self.__creation_semaphore:
+    async def _create_client_session(self) -> None:
+        async with self._creation_semaphore:
             if self._client is None:
                 self._client = create_client_session(self.__user_agent)
 
@@ -88,7 +88,7 @@ class BaseCrawler:
         raise NotImplementedError
 
     async def __consume_queue(self, consumer: int):
-        await self.__create_client_session()
+        await self._create_client_session()
         self.__remaining_coroutines += 1
         defrag = self._url_filter.defragment
         while True:
