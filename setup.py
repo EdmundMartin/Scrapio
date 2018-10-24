@@ -45,7 +45,7 @@ args = dict(
     maintainer='Edmund Martin <edmartin101@gmail.com>',
     maintainer_email='edmartin101@gmail.com',
     url='https://github.com/EdmundMartin/Scrapio',
-    packages=find_packages(exclude=('tests.*', 'examples.*')),
+    packages=find_packages(exclude=('tests', '*.tests', '*.tests.*')),
     python_requires='>=3.5.3',
     install_requires=install_requires,
     include_package_data=True,
