@@ -28,8 +28,8 @@ install_requires = [
 
 args = dict(
     name='scrapio',
-    version='0.1.2',
-    description='Aysncio crawling framework',
+    version='0.1.3',
+    description='Aysncio web crawling framework',
     classifiers=[
         'Intended Audience :: Developers',
         'Programming Language :: Python',
@@ -45,7 +45,7 @@ args = dict(
     maintainer='Edmund Martin <edmartin101@gmail.com>',
     maintainer_email='edmartin101@gmail.com',
     url='https://github.com/EdmundMartin/Scrapio',
-    packages=find_packages(),
+    packages=find_packages(exclude=('tests.*', 'examples.*')),
     python_requires='>=3.5.3',
     install_requires=install_requires,
     include_package_data=True,
