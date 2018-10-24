@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 #import aiofiles # external dependency
-import lxml.html as lh
 from scrapio.scrapers.experimental import CfCrawler
 
 
