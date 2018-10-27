@@ -4,6 +4,8 @@ from typing import Union
 
 class JobQueue(asyncio.Queue):
 
+    __slots__ = ['_seen_urls', '_active_jobs', '_seen_semaphore', '_max_crawl_size', '_page_count']
+
     def __init__(self, max_crawl_size: Union[int, None]):
         self._seen_urls = set()
         self._active_jobs = 0
