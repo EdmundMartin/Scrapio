@@ -73,8 +73,12 @@ class NewJobQueue:
             except asyncio.QueueEmpty:
                 if self._active_jobs > 0:
                     await asyncio.sleep(0.001)
-                else:
+                elif self._parse_queue.qsize() >= 1:
+                    await asyncio.sleep(0.001)
+                elif self._active_jobs <= 0:
                     raise asyncio.QueueEmpty("Queue empty with no pending jobs")
+                else:
+                    await asyncio.sleep(0.001)
             else:
                 return next_job
 
@@ -89,8 +93,12 @@ class NewJobQueue:
             except asyncio.QueueEmpty:
                 if self._active_jobs > 0:
                     await asyncio.sleep(0.001)
-                else:
+                elif self._request_queue.qsize() >= 1:
+                    await asyncio.sleep(0.001)
+                elif self._active_jobs <= 0:
                     raise asyncio.QueueEmpty("Queue empty with no pending jobs")
+                else:
+                    await asyncio.sleep(0.001)
             else:
                 return next_job
 
