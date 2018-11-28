@@ -28,7 +28,7 @@ install_requires = [
 
 args = dict(
     name='scrapio',
-    version='0.1.3',
+    version='0.1.4',
     description='Aysncio web crawling framework',
     classifiers=[
         'Intended Audience :: Developers',
