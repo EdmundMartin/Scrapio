@@ -9,6 +9,7 @@ from scrapio.parsing.links import link_extractor
 from scrapio.requests.get import get_with_client
 from scrapio.structures.queues import NewJobQueue
 from scrapio.structures.proxies import AbstractProxyManager
+from scrapio.structures.rate_limiter import RateLimiter
 from scrapio.structures.filtering import URLFilter
 from scrapio.utils.helpers import create_client_session
 
@@ -39,6 +40,7 @@ class BaseCrawler:
         self._client_timeout = self._setup_timeout_rules(timeout)
 
         self.verbose = verbose
+        self._rate_limiter = RateLimiter(kwargs.get('rate_limit')) if kwargs.get('rate_limit') else None
         self.__remaining_coroutines = 0
         self.__user_agent = user_agent
         self._creation_semaphore = asyncio.BoundedSemaphore(1)
@@ -123,6 +125,8 @@ class BaseCrawler:
         try:
             if self.verbose:
                 self._logger.info('Coroutine: {}, Requesting URL: {}'.format(consumer, url))
+            if self._rate_limiter:
+                await self._rate_limiter.limited()
             resp = await get_with_client(self._client, self._client_timeout, self._proxy_manager, url)
             await self._task_queue.put_parse_request(resp)
         except Exception as e:
