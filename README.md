@@ -14,7 +14,7 @@ from collections import defaultdict
 
 import aiofiles # external dependency
 import lxml.html as lh
-from scrapio.scrapers.base_crawler import BaseCrawler
+from scrapio.crawlers.base_crawler import BaseCrawler
 from scrapio.utils.helpers import response_to_html
 
 
@@ -56,7 +56,7 @@ from collections import defaultdict
 
 import aiofiles # external dependency
 import lxml.html as lh
-from scrapio.scrapers import BaseCrawler
+from scrapio.crawlers import BaseCrawler
 from scrapio.utils.helpers import response_to_html
 from scrapio.structures.filtering import URLFilter
 
@@ -105,7 +105,7 @@ from collections import defaultdict
 
 import lxml.html as lh
 
-from scrapio.scrapers import SplashConfiguration, SplashCrawler
+from scrapio.crawlers import SplashConfiguration, SplashCrawler
 from scrapio.utils.helpers import response_to_html
 
 
