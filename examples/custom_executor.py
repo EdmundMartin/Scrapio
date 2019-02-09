@@ -2,7 +2,7 @@ from concurrent import futures
 from collections import defaultdict
 
 #import aiofiles # external dependency
-from scrapio.scrapers import BaseCrawler
+from scrapio.crawlers import BaseCrawler
 
 
 class OurScraper(BaseCrawler):

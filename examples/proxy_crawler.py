@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from scrapio.scrapers import BaseCrawler
+from scrapio.crawlers import BaseCrawler
 from scrapio.structures.proxies import AbstractProxyManager
 from scrapio.utils.helpers import response_to_html
 import lxml.html as lh

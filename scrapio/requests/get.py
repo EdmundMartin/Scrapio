@@ -12,7 +12,7 @@ async def get_with_client(client: ClientSession, client_timeout: ClientTimeout, 
     proxy = await get_proxy_from_manager(proxy_manager)
     async with client.get(url, timeout=client_timeout, proxy=proxy) as resp:
         try:
-            html = await resp.read()
+            await resp.read()
         except ClientError:
             logger = logging.getLogger('ScrapIO')
             logger.warning('ClientError for URL: {}'.format(url))
@@ -26,7 +26,7 @@ async def get_with_client(client: ClientSession, client_timeout: ClientTimeout, 
 async def get_with_splash(client: ClientSession, client_timeout: ClientTimeout, url: str) -> ClientResponse:
     async with client.get(url, timeout=client_timeout) as resp:
         try:
-            html = await resp.read()
+            await resp.read()
         except ClientError:
             logger = logging.getLogger('ScrapIO')
             logger.warning('ClientError for URL: {}'.format(url))

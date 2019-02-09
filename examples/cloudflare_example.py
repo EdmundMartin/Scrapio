@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 #import aiofiles # external dependency
-from scrapio.scrapers.experimental import CfCrawler
+from scrapio.crawlers.experimental import CfCrawler
 
 
 class OurScraper(CfCrawler):

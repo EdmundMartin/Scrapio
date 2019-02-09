@@ -2,7 +2,7 @@ from collections import defaultdict
 
 import lxml.html as lh
 
-from scrapio.scrapers import SplashConfiguration, SplashCrawler
+from scrapio.crawlers import SplashConfiguration, SplashCrawler
 
 
 class ExampleSplashScraper(SplashCrawler):

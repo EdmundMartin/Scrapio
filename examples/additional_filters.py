@@ -2,7 +2,7 @@ from collections import defaultdict
 
 import aiofiles # external dependency
 import lxml.html as lh
-from scrapio.scrapers import BaseCrawler
+from scrapio.crawlers import BaseCrawler
 
 
 class OurScraper(BaseCrawler):

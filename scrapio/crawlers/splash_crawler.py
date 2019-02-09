@@ -7,7 +7,7 @@ from aiohttp import ClientSession, ClientTimeout, ClientResponse
 
 from scrapio.structures.filtering import URLFilter
 from scrapio.parsing.links import link_extractor
-from scrapio.structures.queues import JobQueue
+from scrapio.structures.queues import NewJobQueue
 from scrapio.requests.get import get_with_splash
 from scrapio.structures.proxies import AbstractProxyManager
 from scrapio.utils.helpers import create_client_session
@@ -58,7 +58,7 @@ class SplashCrawler:
             self._url_filter = URLFilter(start_url, kwargs.get('additional_rules', []),
                                          kwargs.get('follow_robots', True))
 
-        self._task_queue = JobQueue(max_crawl_size=max_crawl_size)
+        self._task_queue = NewJobQueue(max_crawl_size=max_crawl_size)
 
         self._executor = kwargs.get('executor', None)
         logging.basicConfig(level=logging.DEBUG, format='%(message)s')
@@ -101,26 +101,23 @@ class SplashCrawler:
     async def save_results(self, result):
         raise NotImplementedError
 
-    async def __consume_queue(self, consumer: int):
+    async def __consume_request_queue(self, consumer: int):
         await self.__create_client_session()
         self.__remaining_coroutines += 1
-        defrag = self._url_filter.defragment
+
         while True:
             try:
-                task, item = await self._task_queue.get_next_job()
-                if task == 'Request':
-                    await self._make_requests(consumer, item)
-                else:
-                    await self._parse_response(consumer, item, defrag)
+                item = await self._task_queue.get_next_url()
+                await self._make_requests(consumer, item)
                 self._task_queue.completed_task()
             except asyncio.QueueEmpty:
-                self._logger.info('Thread: {}, No more URLs, Consumer shutting down'.format(consumer))
+                self._logger.info('Coroutine: {}, No more URLs, Consumer shutting down'.format(consumer))
                 self.__remaining_coroutines -= 1
                 if self.__remaining_coroutines <= 0:
                     await self._client.close()
                 return
             except Exception as e:
-                self._logger.warning("Thread: {}, Encountered exception: {}".format(consumer, e))
+                self._logger.warning("Coroutine: {}, Encountered exception: {}".format(consumer, e))
                 self._task_queue.completed_task()
 
     async def _make_requests(self, consumer: int, url: str):
@@ -132,10 +129,23 @@ class SplashCrawler:
                 if proxy:
                     splash_location += '&proxy={}'.format(proxy)
             resp = await get_with_splash(self._client, self._client_timeout, splash_location)
-            resp._url = url # Splash unfortunately loses the URL redirect information from the request
+            resp._url = url  # Splash unfortunately loses the URL redirect information from the request
             self._task_queue.put_nowait(('Parse', resp))
         except Exception as e:
             self._logger.warning("Thread: {}, Encountered exception: {}".format(consumer, e))
+
+    async def __consume_parse_queue(self, consumer: int):
+        defrag = self._url_filter.defragment
+        while True:
+            try:
+                item = await self._task_queue.get_next_parse_job()
+                await self._parse_response(consumer, item, defrag)
+                self._task_queue.completed_task()
+            except asyncio.QueueEmpty:
+                return
+            except Exception as e:
+                self._logger.warning("Coroutine: {}, Encountered exception: {}".format(consumer, e))
+                self._task_queue.completed_task()
 
     async def _parse_response(self, consumer: int, response: ClientResponse, defrag: bool) -> None:
         try:
@@ -149,7 +159,9 @@ class SplashCrawler:
             self._logger.warning('Parser: {}, Encountered exception: {}'.format(consumer, e))
 
     def run_scraper(self, workers: int) -> None:
-        work_group = asyncio.gather(*[self.__consume_queue(i) for i in range(workers)])
+        groups = [self.__consume_parse_queue(i) for i in range(workers)]
+        groups += [self.__consume_request_queue(i) for i in range(workers)]
+        work_group = asyncio.gather(*groups)
 
         loop = self._get_best_event_loop()
         try:

@@ -2,7 +2,7 @@ from collections import defaultdict
 from lxml import html as lh
 
 from scrapio.mixins.mongo import MongoMixin
-from scrapio.scrapers import BaseCrawler
+from scrapio.crawlers import BaseCrawler
 
 
 class OurMongoScraper(MongoMixin, BaseCrawler):
