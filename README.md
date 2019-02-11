@@ -14,7 +14,7 @@ from collections import defaultdict
 
 import aiofiles # external dependency
 import lxml.html as lh
-from scrapio.crawlers.base_crawler import BaseCrawler
+from scrapio.crawlers.base_crawler import BaseCrawler # import from scrapio.scrapers on version 0.14 and lower
 from scrapio.utils.helpers import response_to_html
 
 

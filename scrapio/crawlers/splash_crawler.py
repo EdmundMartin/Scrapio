@@ -63,22 +63,26 @@ class SplashCrawler:
         self._executor = kwargs.get('executor', None)
         logging.basicConfig(level=logging.DEBUG, format='%(message)s')
         self._logger = kwargs.get('logger', logging.getLogger("Scraper"))
-
+        self.__seed_url_queue(start_url)
         self._timeout = timeout
-        if kwargs.get('client_timeout_rules') and isinstance('client_timeout_rules', dict):
-            rules = kwargs.get('client_timeout_rules')
-            self._client_timeout = ClientTimeout(**rules)
-        else:
-            self._client_timeout = ClientTimeout(total=float(self._timeout))
-        if isinstance(self._start_url, list):
-            for i in self._start_url:
-                self._task_queue.put_nowait(('Request', i))
-        elif isinstance(self._start_url, str):
-            self._task_queue.put_nowait(('Request', self._start_url))
-
+        self._client_timeout = ClientTimeout(total=float(self._timeout), **kwargs)
         self.__remaining_coroutines = 0
         self.__user_agent = user_agent
         self.__creation_semaphore = asyncio.BoundedSemaphore(1)
+
+    @staticmethod
+    def _setup_timeout_rules(timeout: Union[float, int], **kwargs) -> ClientTimeout:
+        if kwargs.get('client_timeout_rules') and isinstance('client_timeout_rules', dict):
+            rules = kwargs.get('client_timeout_rules')
+            return ClientTimeout(**rules)
+        return ClientTimeout(total=float(timeout))
+
+    def __seed_url_queue(self, start_url) -> None:
+        if isinstance(start_url, str):
+            self._task_queue._request_queue.put_nowait(start_url)
+        elif isinstance(start_url, (set, list)):
+            for item in start_url:
+                self._task_queue._request_queue.put_nowait(item)
 
     async def __create_client_session(self):
         async with self.__creation_semaphore:
