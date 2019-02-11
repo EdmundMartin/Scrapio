@@ -58,14 +58,12 @@ class SplashCrawler:
             self._url_filter = URLFilter(start_url, kwargs.get('additional_rules', []),
                                          kwargs.get('follow_robots', True))
 
-        self._task_queue = NewJobQueue(max_crawl_size=max_crawl_size)
+        self._task_queue = NewJobQueue(max_crawl_size, start_url)
 
         self._executor = kwargs.get('executor', None)
         logging.basicConfig(level=logging.DEBUG, format='%(message)s')
         self._logger = kwargs.get('logger', logging.getLogger("Scraper"))
-        self.__seed_url_queue(start_url)
-        self._timeout = timeout
-        self._client_timeout = ClientTimeout(total=float(self._timeout), **kwargs)
+        self._client_timeout = self._setup_timeout_rules(timeout)
         self.__remaining_coroutines = 0
         self.__user_agent = user_agent
         self.__creation_semaphore = asyncio.BoundedSemaphore(1)
@@ -76,13 +74,6 @@ class SplashCrawler:
             rules = kwargs.get('client_timeout_rules')
             return ClientTimeout(**rules)
         return ClientTimeout(total=float(timeout))
-
-    def __seed_url_queue(self, start_url) -> None:
-        if isinstance(start_url, str):
-            self._task_queue._request_queue.put_nowait(start_url)
-        elif isinstance(start_url, (set, list)):
-            for item in start_url:
-                self._task_queue._request_queue.put_nowait(item)
 
     async def __create_client_session(self):
         async with self.__creation_semaphore:

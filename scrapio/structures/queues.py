@@ -1,5 +1,5 @@
 import asyncio
-from typing import Union
+from typing import Union, List
 
 
 class NewJobQueue:
@@ -7,7 +7,7 @@ class NewJobQueue:
     __slots__ = ['_seen_urls', '_active_jobs', '_seen_semaphore', '_max_crawl_size', '_page_count', '_request_queue',
                  '_parse_queue']
 
-    def __init__(self, max_crawl_size: Union[int, None]):
+    def __init__(self, max_crawl_size: Union[int, None], seed_urls: Union[List[str], str]):
         self._seen_urls = set()
         self._active_jobs = 0
         self._seen_semaphore = asyncio.BoundedSemaphore(1)
@@ -15,6 +15,14 @@ class NewJobQueue:
         self._page_count = 0
         self._request_queue = asyncio.Queue()
         self._parse_queue = asyncio.Queue()
+        self.seed_queue(seed_urls)
+
+    def seed_queue(self, seed_urls: Union[List[str], str]):
+        if isinstance(seed_urls, str):
+            self._request_queue.put_nowait(seed_urls)
+        elif isinstance(seed_urls, (set, list)):
+            for item in seed_urls:
+                self._request_queue.put_nowait(item)
 
     async def put_unique_url(self, url):
         async with self._seen_semaphore:

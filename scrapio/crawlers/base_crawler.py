@@ -31,12 +31,11 @@ class BaseCrawler:
         self._proxy_manager: \
             Union[None, AbstractProxyManager] = kwargs.get('proxy_manager')(**kwargs) if kwargs.get('proxy_manager') else None
         self._url_filter = self._set_url_filter(start_url, **kwargs)
-        self._task_queue = NewJobQueue(max_crawl_size=max_crawl_size)
+        self._task_queue = NewJobQueue(max_crawl_size, start_url)
 
         self._executor = kwargs.get('executor', None)
         logging.basicConfig(level=logging.DEBUG, format='%(message)s')
         self._logger = kwargs.get('logger', logging.getLogger("Scraper"))
-        self.__seed_url_queue(start_url)
         self._client_timeout = self._setup_timeout_rules(timeout)
 
         self.verbose = verbose
@@ -53,13 +52,6 @@ class BaseCrawler:
                                  kwargs.get('defragment_urls', True))
         return URLFilter(start_url, kwargs.get('additional_rules', []), kwargs.get('follow_robots', True),
                          kwargs.get('defragment_urls', True))
-
-    def __seed_url_queue(self, start_url) -> None:
-        if isinstance(start_url, str):
-            self._task_queue._request_queue.put_nowait(start_url)
-        elif isinstance(start_url, (set, list)):
-            for item in start_url:
-                self._task_queue._request_queue.put_nowait(item)
 
     @staticmethod
     def _setup_timeout_rules(timeout: Union[float, int], **kwargs) -> ClientTimeout:
