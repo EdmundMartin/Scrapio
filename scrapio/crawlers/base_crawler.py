@@ -118,7 +118,7 @@ class BaseCrawler:
             if self.verbose:
                 self._logger.info('Coroutine: {}, Requesting URL: {}'.format(consumer, url))
             if self._rate_limiter:
-                await self._rate_limiter.limited()
+                await self._rate_limiter.limited(url)
             resp = await get_with_client(self._client, self._client_timeout, self._proxy_manager, url)
             await self._task_queue.put_parse_request(resp)
         except Exception as e:
