@@ -8,16 +8,7 @@ from scrapio.crawlers import BaseCrawler
 class OurScraper(BaseCrawler):
 
     def parse_result(self, response):
-
-        result = defaultdict(lambda: "N/A")
-        result['url'] = response.url
-        title = response.dom.cssselect('title')
-        h1 = response.dom.cssselect('h1')
-        if title:
-            result['title'] = title[0].text_content()
-        if h1:
-            result['h1'] = h1[0].text_content()
-        return result
+        print(response)
 
     async def save_results(self, result):
         if result:
@@ -30,5 +21,5 @@ class OurScraper(BaseCrawler):
 
 
 if __name__ == '__main__':
-    scraper = OurScraper('https://www.zoopla.co.uk')
+    scraper = OurScraper('https://www.zoopla.co.uk', verbose=True)
     scraper.run_scraper(10)

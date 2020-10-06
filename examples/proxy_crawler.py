@@ -1,4 +1,5 @@
 from collections import defaultdict
+import logging
 
 from scrapio.crawlers import BaseCrawler
 from scrapio.structures.proxies import AbstractProxyManager
@@ -17,23 +18,13 @@ class OurProxyManager(AbstractProxyManager):
 
 class OurProxyScraper(BaseCrawler):
 
-    def parse_result(self, html, response):
-        dom = lh.fromstring(html)
-
-        result = defaultdict(lambda: "N/A")
-        result['url'] = response.url
-        title = dom.cssselect('title')
-        h1 = dom.cssselect('h1')
-        if title:
-            result['title'] = title[0].text_content()
-        if h1:
-            result['h1'] = h1[0].text_content()
-        return result
+    def parse_result(self, response):
+        print(response)
 
     async def save_results(self, result):
         print(result)
 
 
 if __name__ == '__main__':
-    scraper = OurProxyScraper('https://www.zoopla.co.uk', proxy_manager=OurProxyManager)
+    scraper = OurProxyScraper('https://www.zoopla.co.uk', proxy_manager=OurProxyManager, logger_level=logging.INFO)
     scraper.run_scraper(10)

@@ -13,22 +13,21 @@ here = pathlib.Path(__file__).parent
 
 
 install_requires = [
-    'aiohttp==3.4.4',
-    'async-timeout==3.0.0',
-    'attrs==18.2.0',
-    'chardet==3.0.4',
-    'cssselect==1.0.3',
-    'idna==2.7',
-    'idna-ssl==1.1.0',
-    'lxml==4.2.5',
-    'multidict==4.4.0',
-    'yarl==1.2.6',
+    "aiohttp==3.6.2",
+    "async-timeout==3.0.1",
+    "attrs==20.2.0",
+    "chardet==3.0.4",
+    "idna==2.10",
+    "lxml==4.5.2",
+    "multidict==4.7.6",
+    "yarl==1.6.0",
+    "brotlipy==0.7.0",
 ]
 
 
 args = dict(
     name='scrapio',
-    version='0.1.5.1',
+    version='0.1.6',
     description='Aysncio web crawling framework',
     classifiers=[
         'Intended Audience :: Developers',

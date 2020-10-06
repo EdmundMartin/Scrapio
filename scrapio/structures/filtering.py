@@ -13,7 +13,7 @@ class AbstractURLFilter(ABC):
 
 class URLFilter(AbstractURLFilter):
 
-    __slots__ = ['_net_locations', '_additional_rules', '_robots', '_robots_cache', 'defragment']
+    __slots__ = ('_net_locations', '_additional_rules', '_robots', '_robots_cache', 'defragment')
 
     def __init__(self, net_locations: List[str], additional_rules: Union[List[str], None], follow_robots: bool,
                  defragment: bool = True):
