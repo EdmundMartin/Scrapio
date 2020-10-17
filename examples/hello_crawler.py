@@ -3,6 +3,7 @@ from collections import defaultdict
 #import aiofiles # external dependency
 import lxml.html as lh
 from scrapio.crawlers import BaseCrawler
+from scrapio.url_set.trie_container import TrieContainer
 
 
 class OurScraper(BaseCrawler):
@@ -21,5 +22,7 @@ class OurScraper(BaseCrawler):
 
 
 if __name__ == '__main__':
-    scraper = OurScraper('https://www.zoopla.co.uk', verbose=True)
+    scraper = OurScraper('https://www.dailymail.co.uk/home/index.html', verbose=True,
+                         seen_url_handler=TrieContainer(),
+                         rate_limit=1)
     scraper.run_scraper(10)

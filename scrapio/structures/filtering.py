@@ -5,7 +5,6 @@ from urllib.robotparser import RobotFileParser
 
 
 class AbstractURLFilter(ABC):
-
     @abstractmethod
     def can_crawl(self, host: str, url: str) -> bool:
         pass
@@ -13,10 +12,21 @@ class AbstractURLFilter(ABC):
 
 class URLFilter(AbstractURLFilter):
 
-    __slots__ = ('_net_locations', '_additional_rules', '_robots', '_robots_cache', 'defragment')
+    __slots__ = (
+        "_net_locations",
+        "_additional_rules",
+        "_robots",
+        "_robots_cache",
+        "defragment",
+    )
 
-    def __init__(self, net_locations: List[str], additional_rules: Union[List[str], None], follow_robots: bool,
-                 defragment: bool = True):
+    def __init__(
+        self,
+        net_locations: List[str],
+        additional_rules: Union[List[str], None],
+        follow_robots: bool,
+        defragment: bool = True,
+    ):
         self._net_locations = net_locations
         self._additional_rules = additional_rules
         self._robots = follow_robots
@@ -31,12 +41,16 @@ class URLFilter(AbstractURLFilter):
             net_locations = [self._net_locations]
         for host in net_locations:
             try:
-                parser = RobotFileParser(url='http://{}/robots.txt'.format(host))
+                parser = RobotFileParser(url="http://{}/robots.txt".format(host))
                 parser.read()
                 robot_cache[host] = parser
             except Exception:
-                logger = logging.getLogger('ScrapIO')
-                logger.warning('Was unable to successfully download robots.txt, for: {}'.format(host))
+                logger = logging.getLogger("ScrapIO")
+                logger.warning(
+                    "Was unable to successfully download robots.txt, for: {}".format(
+                        host
+                    )
+                )
         return robot_cache
 
     def can_crawl(self, host: str, url: str) -> bool:
@@ -49,5 +63,5 @@ class URLFilter(AbstractURLFilter):
             if robots_rules is None and host in self._net_locations:
                 return True
             if robots_rules:
-                return robots_rules.can_fetch('*', url) and host in self._net_locations
+                return robots_rules.can_fetch("*", url) and host in self._net_locations
         return host in self._net_locations

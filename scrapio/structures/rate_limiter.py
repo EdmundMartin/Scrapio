@@ -6,14 +6,12 @@ from urllib.parse import urlparse
 
 
 class AbstractLimiter(ABC):
-
     @abstractmethod
     async def limited(self, url: str) -> None:
         pass
 
 
 class RateLimiter(AbstractLimiter):
-
     def __init__(self, reqs_per_second: int):
         self._rate_limit = reqs_per_second
         self._start_time: time.time = time.time()
@@ -29,7 +27,6 @@ class RateLimiter(AbstractLimiter):
 
 
 class HostLimiter(AbstractLimiter):
-
     def __init__(self, host_dict: Dict[str, int]):
         self._count_per_domain: Dict[str, int] = {}
         self._hosts, self.host_times = self._load_hosts(host_dict)

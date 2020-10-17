@@ -4,14 +4,12 @@ from typing import List
 
 
 class AbstractProxyManager(ABC):
-
     @abstractmethod
     async def get_proxy(self) -> str:
         pass
 
 
 class RoundRobinProxy(AbstractProxyManager):
-
     def __init__(self, proxies: List[str]):
         self._queue = Queue()
         self.__launch_queue(proxies)
