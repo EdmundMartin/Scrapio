@@ -3,16 +3,15 @@ import logging
 from typing import Union, List, Any
 
 
-from aiohttp import ClientSession, ClientResponse, ClientTimeout
+from aiohttp import ClientResponse, ClientTimeout
 
 from scrapio.parsing.links import link_extractor
 from scrapio.requests.get import get_with_client
+from scrapio.requests.default_client import DefaultClient
 from scrapio.structures.queues import WorkQueue, JobType
 from scrapio.structures.proxies import AbstractProxyManager
 from scrapio.structures.rate_limiter import RateLimiter
 from scrapio.structures.filtering import URLFilter
-from scrapio.utils.helpers import create_client_session
-
 
 __all__ = ["BaseCrawler"]
 
@@ -23,13 +22,13 @@ class BaseCrawler:
         start_url: Union[List[str], str],
         max_crawl_size=None,
         timeout=30,
-        user_agent=None,
+        headers=None,
         verbose=True,
         logger_level=logging.WARN,
         **kwargs
     ):
         self._start_url = start_url
-        self._client: Union[None, ClientSession] = None
+        self._client = DefaultClient(timeout, **kwargs)
         self._client_timeout: Union[None, ClientTimeout] = None
         self._timeout: Union[int, None] = None
 
@@ -55,7 +54,7 @@ class BaseCrawler:
             RateLimiter(kwargs.get("rate_limit")) if kwargs.get("rate_limit") else None
         )
         self.__remaining_coroutines = 0
-        self.__user_agent = user_agent
+        self.__headers = headers
         self._creation_semaphore = asyncio.BoundedSemaphore(1)
 
     @staticmethod
@@ -84,11 +83,6 @@ class BaseCrawler:
             return ClientTimeout(**rules)
         return ClientTimeout(total=float(timeout))
 
-    async def _create_client_session(self) -> None:
-        async with self._creation_semaphore:
-            if self._client is None:
-                self._client = create_client_session(self.__user_agent)
-
     def _get_best_event_loop(self):
         try:
             import uvloop
@@ -112,9 +106,7 @@ class BaseCrawler:
             self._logger.info("Coroutine: {}, Requesting URL: {}".format(consumer, url))
             if self._rate_limiter:
                 await self._rate_limiter.limited(url)
-            resp = await get_with_client(
-                self._client, self._client_timeout, self._proxy_manager, url
-            )
+            resp = await self._client.get_request(url, self._proxy_manager)
             await asyncio.sleep(0.001)
             await self._parse_response(consumer, resp)
         except Exception as e:
@@ -147,7 +139,6 @@ class BaseCrawler:
                 return
 
     async def _crawl(self, workers):
-        await self._create_client_session()
         workers = [asyncio.Task(self._process(i)) for i in range(workers)]
         await self._queue.join()
         for worker in workers:
