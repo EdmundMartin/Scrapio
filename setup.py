@@ -18,7 +18,7 @@ install_requires = [
     "attrs==20.2.0",
     "chardet==3.0.4",
     "idna==2.10",
-    "lxml==4.5.2",
+    "lxml==4.6.2",
     "multidict==4.7.6",
     "yarl==1.6.0",
     "brotlipy==0.7.0",
