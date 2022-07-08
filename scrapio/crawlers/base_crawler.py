@@ -3,12 +3,12 @@ import logging
 from typing import Union, List, Any
 
 
-from aiohttp import ClientResponse, ClientTimeout
+from aiohttp import ClientTimeout
 
 from scrapio.parsing.links import link_extractor
-from scrapio.requests.get import get_with_client
 from scrapio.requests.default_client import DefaultClient
-from scrapio.structures.queues import WorkQueue, JobType
+from scrapio.requests.response import Response
+from scrapio.structures.queues import WorkQueue
 from scrapio.structures.proxies import AbstractProxyManager
 from scrapio.structures.rate_limiter import RateLimiter
 from scrapio.structures.filtering import URLFilter
@@ -22,7 +22,6 @@ class BaseCrawler:
         start_url: Union[List[str], str],
         max_crawl_size=None,
         timeout=30,
-        headers=None,
         verbose=True,
         logger_level=logging.WARN,
         **kwargs
@@ -43,8 +42,6 @@ class BaseCrawler:
             start_url,
             seen_url_handler=kwargs.get("seen_url_handler", None),
         )
-
-        self._executor = kwargs.get("executor", None)
         logging.basicConfig(level=logger_level, format="%(message)s")
         self._logger = kwargs.get("logger", logging.getLogger("Scraper"))
         self._client_timeout = self._setup_timeout_rules(timeout)
@@ -53,9 +50,6 @@ class BaseCrawler:
         self._rate_limiter = (
             RateLimiter(kwargs.get("rate_limit")) if kwargs.get("rate_limit") else None
         )
-        self.__remaining_coroutines = 0
-        self.__headers = headers
-        self._creation_semaphore = asyncio.BoundedSemaphore(1)
 
     @staticmethod
     def _set_url_filter(start_url, **kwargs) -> URLFilter:
@@ -95,7 +89,7 @@ class BaseCrawler:
             asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
             return asyncio.get_event_loop()
 
-    def parse_result(self, response: ClientResponse) -> Any:
+    def parse_result(self, response: Response) -> Any:
         raise NotImplementedError
 
     async def save_results(self, result):
@@ -113,10 +107,11 @@ class BaseCrawler:
             self._logger.warning(
                 "Coroutine: {}, Encountered exception: {}".format(consumer, e)
             )
+            raise e
         finally:
             self._queue.task_done()
 
-    async def _parse_response(self, consumer: int, response: ClientResponse) -> None:
+    async def _parse_response(self, consumer: int, response: Response) -> None:
         defrag = self._url_filter.defragment
         try:
             response, links = link_extractor(response, self._url_filter, defrag)
@@ -132,9 +127,8 @@ class BaseCrawler:
     async def _process(self, consumer: int):
         while True:
             try:
-                job_type, job = await self._queue.get_job()
-                if job_type == JobType.Crawl:
-                    await self._make_requests(consumer, job)
+                job = await self._queue.get_job()
+                await self._make_requests(consumer, job)
             except asyncio.CancelledError:
                 return
 
@@ -147,7 +141,7 @@ class BaseCrawler:
     async def _close(self):
         await self._client.close()
 
-    def run_scraper(self, workers: int) -> None:
+    def run_crawler(self, workers: int) -> None:
         loop = asyncio.get_event_loop()
         try:
             loop.run_until_complete(self._crawl(workers))

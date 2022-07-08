@@ -1,20 +1,18 @@
 from typing import List
 from urllib.parse import urlparse, urljoin, urldefrag
 
-from aiohttp import ClientResponse
+from scrapio.requests.response import Response
 import lxml.html as lh
 
 from scrapio.structures.filtering import URLFilter
 
 
 def link_extractor(
-    response: ClientResponse, url_filter: URLFilter, defrag: bool
+    response: Response, url_filter: URLFilter, defrag: bool
 ) -> (str, List[str]):
-    html = response._body.decode("utf-8", errors="ignore")
-    req_url = response._url
+    html = response.body
+    req_url = response.url
     dom = lh.fromstring(html)
-    response.__setattr__("dom", dom)
-    response.__setattr__("html", html)
     found_urls = []
     for href in dom.xpath("//a/@href"):
         url = urljoin(str(req_url), href)

@@ -27,4 +27,4 @@ class OurProxyScraper(BaseCrawler):
 
 if __name__ == '__main__':
     scraper = OurProxyScraper('https://www.zoopla.co.uk', proxy_manager=OurProxyManager, logger_level=logging.INFO)
-    scraper.run_scraper(10)
+    scraper.run_crawler(10)

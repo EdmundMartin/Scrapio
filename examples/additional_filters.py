@@ -7,8 +7,8 @@ from scrapio.crawlers import BaseCrawler
 
 class OurScraper(BaseCrawler):
 
-    def parse_result(self, html, response):
-        dom = lh.fromstring(html)
+    def parse_result(self, response):
+        dom = lh.fromstring(response.body)
 
         result = defaultdict(lambda: "N/A")
         result['url'] = response.url
@@ -31,4 +31,4 @@ class OurScraper(BaseCrawler):
 
 if __name__ == '__main__':
     scraper = OurScraper('http://edmundmartin.com', additional_rules=['golang', 'replyto'])
-    scraper.run_scraper(10)
+    scraper.run_crawler(10)

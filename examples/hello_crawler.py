@@ -24,5 +24,5 @@ class OurScraper(BaseCrawler):
 if __name__ == '__main__':
     scraper = OurScraper('https://www.dailymail.co.uk/home/index.html', verbose=True,
                          seen_url_handler=TrieContainer(),
-                         rate_limit=1)
-    scraper.run_scraper(10)
+                         rate_limit=10)
+    scraper.run_crawler(10)

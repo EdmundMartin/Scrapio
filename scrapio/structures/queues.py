@@ -29,7 +29,7 @@ class WorkQueue:
         seed_urls: Union[List[str], str],
         seen_url_handler: AbstractUrlSet = None,
     ):
-        self._seen_urls: AbstractUrlSet = seen_url_handler or SetContainer()
+        self._seen_urls: AbstractUrlSet = seen_url_handler or TrieContainer()
         self._active_jobs = 0
         self._max_crawl_size = max_crawl_size
         self._page_count = 0
@@ -38,20 +38,20 @@ class WorkQueue:
 
     def seed_queue(self, seed_urls: Union[List[str], str]):
         if isinstance(seed_urls, str):
-            self._queue.put_nowait((JobType.Crawl, seed_urls))
+            self._queue.put_nowait(seed_urls)
         elif isinstance(seed_urls, (set, list)):
             for item in seed_urls:
-                self._queue.put_nowait((JobType.Crawl, item))
+                self._queue.put_nowait(item)
 
-    async def get_job(self):
+    async def get_job(self) -> str:
         return await self._queue.get()
 
     async def put_url(self, url):
         if url not in self._seen_urls:
             if self._max_crawl_size and self._page_count < self._max_crawl_size:
-                await self._queue.put((JobType.Crawl, url))
+                await self._queue.put(url)
             elif self._max_crawl_size is None:
-                await self._queue.put((JobType.Crawl, url))
+                await self._queue.put(url)
             self._page_count += 1
         self._seen_urls.put(url)
 

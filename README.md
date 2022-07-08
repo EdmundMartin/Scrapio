@@ -1,5 +1,7 @@
 # Scrapio
-Asyncio web scraping framework. The project aims to make easy to write a highly performant scrapers with little knowledge of asyncio, while giving enough flexibility so that users can customise behaviour of their scrapers. It also supports Uvloop, and can be used in conjunction with Splash the JavaScript rendering solution from ScrapingHub.
+Asyncio web scraping framework. The project aims to make easy to write a high performance crawlers with little knowledge of asyncio, 
+while giving enough flexibility so that users can customise behaviour of their scrapers. It also supports Uvloop, 
+and can be used in conjunction with custom clients allowing for browser based rendering.
 
 ## Install
 ```
@@ -45,7 +47,7 @@ class OurScraper(BaseCrawler):
 
 if __name__ == '__main__':
     scraper = OurScraper('http://edmundmartin.com')
-    scraper.run_scraper(10)
+    scraper.run_crawler(10)
 ```
 The above represents a fully functional scraper using the Scrapio framework. We overide the parse_result and save_results from the base scraper class. We then initialize the crawler with our start URL and set the number of scraping processes and the number of parsing processes.
 
@@ -96,41 +98,5 @@ class OurScraper(BaseCrawler):
 
 if __name__ == '__main__':
     scraper = OurScraper('http://edmundmartin.com', custom_filter=PythonURLFilter)
-    scraper.run_scraper(10)
-```
-
-## Splash Crawler
-```python
-from collections import defaultdict
-
-import lxml.html as lh
-
-from scrapio.crawlers import SplashConfiguration, SplashCrawler
-from scrapio.utils.helpers import response_to_html
-
-
-class ExampleSplashScraper(SplashCrawler):
-
-    def parse_result(self, response):
-        html = response_to_html(response)
-        dom = lh.fromstring(html)
-
-        result = defaultdict(lambda: "N/A")
-        result['url'] = response.url
-        title = dom.cssselect('title')
-        h1 = dom.cssselect('h1')
-        if title:
-            result['title'] = title[0].text_content()
-        if h1:
-            result['h1'] = h1[0].text_content()
-        return result
-
-    async def save_results(self, result):
-        print(result)
-
-
-if __name__ == '__main__':
-    splash_config = SplashConfiguration('http://localhost:8050', 30, 10)
-    scraper = ExampleSplashScraper(splash_config, 'http://edmundmartin.com')
-    scraper.run_scraper(10)
+    scraper.run_crawler(10)
 ```

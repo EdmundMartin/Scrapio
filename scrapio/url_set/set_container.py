@@ -2,6 +2,11 @@ from scrapio.url_set.abstract_set import AbstractUrlSet
 
 
 class SetContainer(AbstractUrlSet):
+
+    __slots__ = [
+        '_seen'
+    ]
+
     def __init__(self):
         self._seen = set()
 

@@ -3,7 +3,6 @@ import asyncio
 from urllib.parse import urlparse
 
 from scrapio.structures.proxies import AbstractProxyManager, RoundRobinProxy
-from scrapio.structures.queues import TimeoutQueue
 from scrapio.structures.filtering import URLFilter
 
 
@@ -25,19 +24,6 @@ class TestRoundRobinProxy(unittest.TestCase):
         rrp = RoundRobinProxy(['Proxy 1', 'Proxy 2', 'Proxy 3'])
         self.loop.run_until_complete(self.proxy_manager_run(rrp))
 
-
-class TestTimeOutQueue(unittest.TestCase):
-
-    def setUp(self):
-        self.loop = asyncio.get_event_loop()
-
-    async def run_timeout_queue(self, timeout):
-        timeoutQ = TimeoutQueue()
-        res = await timeoutQ.get_max_wait(timeout)
-
-    def test_timeout(self):
-        with self.assertRaises(asyncio.TimeoutError):
-            self.loop.run_until_complete(self.run_timeout_queue(1))
 
 
 class TestURLFiltering(unittest.TestCase):

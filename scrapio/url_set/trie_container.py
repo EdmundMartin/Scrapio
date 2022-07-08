@@ -1,15 +1,31 @@
+from urllib.parse import urlparse
+from typing import List
+
 from scrapio.url_set.abstract_set import AbstractUrlSet
 
 
 class TrieContainer(AbstractUrlSet):
+
+    __slots__ = (
+        'trie',
+        '_end_symbol'
+    )
+
     def __init__(self):
-        self._trie = dict()
+        self.trie = dict()
         self._end_symbol = "END"
 
-    def __contains__(self, item):
-        sub_trie = self._trie
+    def make_parts(self, url: str) -> List[str]:
+        parsed = urlparse(url)
+        parts = [parsed.scheme, parsed.netloc]
+        for item in parsed.path.split('/'):
+            parts.append(item)
+        return parts
 
-        for char in item:
+    def __contains__(self, item):
+        sub_trie = self.trie
+        parts = self.make_parts(item)
+        for char in parts:
             if char in sub_trie:
                 sub_trie = sub_trie[char]
             else:
@@ -23,9 +39,9 @@ class TrieContainer(AbstractUrlSet):
     def put(self, url: str) -> None:
         if url in self:
             return
-
-        temp_trie = self._trie
-        for char in url:
+        temp_trie = self.trie
+        parts = self.make_parts(url)
+        for char in parts:
             if char in temp_trie:
                 temp_trie = temp_trie[char]
             else:

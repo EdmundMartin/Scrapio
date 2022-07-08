@@ -5,6 +5,7 @@ from aiohttp import ClientSession, ClientTimeout, ClientError
 
 from scrapio.structures.proxies import AbstractProxyManager
 from scrapio.requests.client import AbstractClient
+from scrapio.requests.response import from_aiohttp_response
 from scrapio.utils.helpers import get_proxy_from_manager
 
 
@@ -48,7 +49,7 @@ class DefaultClient(AbstractClient):
                 logger = logging.getLogger("ScrapIO")
                 logger.warning("Unexpected error for URL: {}".format(e))
             else:
-                return resp
+                return await from_aiohttp_response(resp)
 
     async def close(self):
         await self.session.close()
