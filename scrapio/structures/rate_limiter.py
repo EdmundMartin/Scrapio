@@ -13,7 +13,7 @@ class AbstractLimiter(ABC):
 
 class RateLimiter(AbstractLimiter):
 
-    __slots__ = ['_rate_limit', '_start_time', '_url_count']
+    __slots__ = ["_rate_limit", "_start_time", "_url_count"]
 
     def __init__(self, reqs_per_second: int):
         self._rate_limit = reqs_per_second

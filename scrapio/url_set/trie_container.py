@@ -6,10 +6,7 @@ from scrapio.url_set.abstract_set import AbstractUrlSet
 
 class TrieContainer(AbstractUrlSet):
 
-    __slots__ = (
-        'trie',
-        '_end_symbol'
-    )
+    __slots__ = ("trie", "_end_symbol")
 
     def __init__(self):
         self.trie = dict()
@@ -18,7 +15,7 @@ class TrieContainer(AbstractUrlSet):
     def make_parts(self, url: str) -> List[str]:
         parsed = urlparse(url)
         parts = [parsed.scheme, parsed.netloc]
-        for item in parsed.path.split('/'):
+        for item in parsed.path.split("/"):
             parts.append(item)
         return parts
 

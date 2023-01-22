@@ -1,11 +1,10 @@
 import unittest
-from scrapio.url_set.trie_container import TrieContainerOptimised
+from scrapio.url_set.trie_container import TrieContainer
 
 
-class TestTrieContainerOptimised(unittest.TestCase):
-
+class TestTrieContainer(unittest.TestCase):
     def test_correctly_checks_for_url(self):
-        container = TrieContainerOptimised()
+        container = TrieContainer()
         container.put("https://google.com/edmund")
         container.put("https://google.com/edmund/martin")
         container.put("https://john.co.uk/something")

@@ -1,17 +1,18 @@
 import asyncio
 import logging
-from typing import Union, List, Any
+from typing import Union, List, Any, Optional
 
 
 from aiohttp import ClientTimeout
 
 from scrapio.parsing.links import link_extractor
-from scrapio.requests.default_client import DefaultClient
 from scrapio.requests.response import Response
 from scrapio.structures.queues import WorkQueue
 from scrapio.structures.proxies import AbstractProxyManager
 from scrapio.structures.rate_limiter import RateLimiter
 from scrapio.structures.filtering import URLFilter
+from scrapio.retries.retry import NoOpRetryStrategy
+from scrapio.requests import DefaultClient, AbstractClient
 
 __all__ = ["BaseCrawler"]
 
@@ -21,16 +22,14 @@ class BaseCrawler:
         self,
         start_url: Union[List[str], str],
         max_crawl_size=None,
-        timeout=30,
         verbose=True,
         logger_level=logging.WARN,
+        client: Optional[AbstractClient] = None,
         **kwargs
     ):
         self._start_url = start_url
-        self._client = DefaultClient(timeout, **kwargs)
-        self._client_timeout: Union[None, ClientTimeout] = None
-        self._timeout: Union[int, None] = None
 
+        self._client = client if client else DefaultClient()
         self._proxy_manager: Union[None, AbstractProxyManager] = (
             kwargs.get("proxy_manager")(**kwargs)
             if kwargs.get("proxy_manager")
@@ -44,12 +43,11 @@ class BaseCrawler:
         )
         logging.basicConfig(level=logger_level, format="%(message)s")
         self._logger = kwargs.get("logger", logging.getLogger("Scraper"))
-        self._client_timeout = self._setup_timeout_rules(timeout)
-
         self.verbose = verbose
         self._rate_limiter = (
             RateLimiter(kwargs.get("rate_limit")) if kwargs.get("rate_limit") else None
         )
+        self.retry_handler = kwargs.get("retry_handler", NoOpRetryStrategy())
 
     @staticmethod
     def _set_url_filter(start_url, **kwargs) -> URLFilter:
@@ -96,6 +94,7 @@ class BaseCrawler:
         raise NotImplementedError
 
     async def _make_requests(self, consumer: int, url: str):
+        err_raised = False
         try:
             self._logger.info("Coroutine: {}, Requesting URL: {}".format(consumer, url))
             if self._rate_limiter:
@@ -107,9 +106,12 @@ class BaseCrawler:
             self._logger.warning(
                 "Coroutine: {}, Encountered exception: {}".format(consumer, e)
             )
+            err_raised = True
             raise e
         finally:
             self._queue.task_done()
+            if err_raised is True and self.retry_handler.should_retry(url):
+                await self._queue.put_url(url)
 
     async def _parse_response(self, consumer: int, response: Response) -> None:
         defrag = self._url_filter.defragment
@@ -142,7 +144,7 @@ class BaseCrawler:
         await self._client.close()
 
     def run_crawler(self, workers: int) -> None:
-        loop = asyncio.get_event_loop()
+        loop = self._get_best_event_loop()
         try:
             loop.run_until_complete(self._crawl(workers))
         except KeyboardInterrupt:

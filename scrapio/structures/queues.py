@@ -29,7 +29,7 @@ class WorkQueue:
         seed_urls: Union[List[str], str],
         seen_url_handler: AbstractUrlSet = None,
     ):
-        self._seen_urls: AbstractUrlSet = seen_url_handler or TrieContainer()
+        self._seen_urls: AbstractUrlSet = seen_url_handler or SetContainer()
         self._active_jobs = 0
         self._max_crawl_size = max_crawl_size
         self._page_count = 0

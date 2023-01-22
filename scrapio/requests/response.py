@@ -5,13 +5,7 @@ from aiohttp import ClientResponse
 
 class Response:
 
-    __slots__ = [
-        'url',
-        'status',
-        'headers',
-        'body',
-        'raw_response'
-    ]
+    __slots__ = ["url", "status", "headers", "body", "raw_response"]
 
     def __init__(self):
         self.url: Optional[str] = None
@@ -29,7 +23,7 @@ async def from_aiohttp_response(client_response: ClientResponse) -> Response:
     resp.url = client_response.url
     resp.status = client_response.status
     resp.headers = client_response.headers
-    bytes = await client_response.read()
-    resp.body = bytes.decode("utf-8", errors='ignore')
+    resp_bytes = await client_response.read()
+    resp.body = resp_bytes.decode("utf-8", errors="ignore")
     resp.raw_response = client_response
     return resp
