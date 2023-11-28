@@ -13,7 +13,7 @@ here = pathlib.Path(__file__).parent
 
 
 install_requires = [
-    "aiohttp==3.8.5",
+    "aiohttp==3.9.0",
     "async-timeout==3.0.1",
     "attrs==20.2.0",
     "chardet==3.0.4",
