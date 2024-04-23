@@ -17,7 +17,7 @@ install_requires = [
     "async-timeout==4.0.3",
     "attrs==20.2.0",
     "chardet==3.0.4",
-    "idna==2.10",
+    "idna==3.7",
     "lxml==5.2.1",
     "multidict==4.7.6",
     "yarl==1.6.0",
@@ -27,7 +27,7 @@ install_requires = [
 
 args = dict(
     name="scrapio",
-    version="0.1.8",
+    version="0.1.9",
     description="Aysncio web crawling framework",
     classifiers=[
         "Intended Audience :: Developers",

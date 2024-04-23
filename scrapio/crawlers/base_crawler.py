@@ -110,8 +110,10 @@ class BaseCrawler:
             raise e
         finally:
             self._queue.task_done()
-            if err_raised is True and self.retry_handler.should_retry(url):
-                await self._queue.put_url(url)
+            if err_raised is True:
+                should_retry = await self.retry_handler.should_retry(url)
+                if should_retry:
+                    await self._queue.put_url(url)
 
     async def _parse_response(self, consumer: int, response: Response) -> None:
         defrag = self._url_filter.defragment
