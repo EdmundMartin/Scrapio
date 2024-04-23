@@ -2,7 +2,7 @@ aiohttp==3.9.5
 async-timeout==4.0.3
 attrs==20.2.0
 chardet==3.0.4
-idna==2.10
+idna==3.7
 lxml==5.2.1
 multidict==4.7.6
 yarl==1.6.0
