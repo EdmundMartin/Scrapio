@@ -11,6 +11,13 @@ from scrapio.requests.client_configuration import TimeoutRules, get_default_time
 
 
 class DefaultClient(AbstractClient):
+
+    __slots__ = (
+        "session",
+        "headers",
+        "timeout_rules"
+    )
+
     def __init__(
         self,
         timeout_rules: Optional[TimeoutRules] = None,
@@ -21,14 +28,19 @@ class DefaultClient(AbstractClient):
             if timeout_rules
             else get_default_timeout()._to_aiohttp()
         )
-        self.session = ClientSession(
-            headers=headers,
-            timeout=timeout_rules,
-        )
+        self.session: Optional[ClientSession] = None
+        self.headers = headers
+        self.timeout_rules = timeout_rules
+
+    async def _get_client(self):
+        if self.session:
+            return
+        self.session = ClientSession(headers=self.headers, timeout=self.timeout_rules)
 
     async def get_request(
         self, url: str, proxy_manager: Optional[AbstractProxyManager]
     ):
+        await self._get_client()
         proxy = await get_proxy_from_manager(proxy_manager)
         async with self.session.get(url, proxy=proxy) as resp:
             try:

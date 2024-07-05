@@ -27,7 +27,7 @@ class SimpleAttempts(AbstractRetry):
         self.max_retries = max_retries
 
     async def should_retry(self, url: str) -> bool:
-        if url not in self.max_retries:
+        if url not in self.retry_counter:
             self.retry_counter[url] = 1
             return 1 < self.max_retries
         self.retry_counter[url] += 1

@@ -8,7 +8,7 @@ from scrapio.structures.filtering import URLFilter
 
 
 def link_extractor(
-    response: Response, url_filter: URLFilter, defrag: bool
+    response: Response, url_filter: URLFilter, defragment: bool
 ) -> (str, List[str]):
     html = response.body
     req_url = response.url
@@ -16,7 +16,7 @@ def link_extractor(
     found_urls = []
     for href in dom.xpath("//a/@href"):
         url = urljoin(str(req_url), href)
-        if defrag:
+        if defragment:
             url = urldefrag(url)[0]
         netloc = urlparse(url).netloc
         can_crawl = url_filter.can_crawl(netloc, url)

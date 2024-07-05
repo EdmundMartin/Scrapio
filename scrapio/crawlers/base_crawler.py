@@ -14,6 +14,7 @@ from scrapio.structures.filtering import URLFilter
 from scrapio.retries.retry import NoOpRetryStrategy
 from scrapio.requests import DefaultClient, AbstractClient
 
+
 __all__ = ["BaseCrawler"]
 
 
@@ -75,18 +76,6 @@ class BaseCrawler:
             return ClientTimeout(**rules)
         return ClientTimeout(total=float(timeout))
 
-    def _get_best_event_loop(self):
-        try:
-            import uvloop
-        except ImportError:
-            self._logger.info(
-                "Uvloop not found reverting to base event loop implementation"
-            )
-            return asyncio.get_event_loop()
-        else:
-            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-            return asyncio.get_event_loop()
-
     def parse_result(self, response: Response) -> Any:
         raise NotImplementedError
 
@@ -146,11 +135,10 @@ class BaseCrawler:
         await self._client.close()
 
     def run_crawler(self, workers: int) -> None:
-        loop = self._get_best_event_loop()
+        loop = asyncio.get_event_loop()
         try:
             loop.run_until_complete(self._crawl(workers))
         except KeyboardInterrupt:
             logging.info("Shutting down - received keyboard interrupt")
         finally:
             loop.run_until_complete(self._close())
-            loop.close()

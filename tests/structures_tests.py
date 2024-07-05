@@ -10,10 +10,10 @@ class TestRoundRobinProxy(unittest.TestCase):
     def setUp(self):
         self.loop = asyncio.get_event_loop()
 
-    async def proxy_manager_run(self, roundRobin: RoundRobinProxy):
+    async def proxy_manager_run(self, round_robin: RoundRobinProxy):
         results = ["Proxy 1", "Proxy 2", "Proxy 3"]
         for i in range(3):
-            proxy = await roundRobin.get_proxy()
+            proxy = await round_robin.get_proxy()
             self.assertEqual(proxy, results[i])
 
     def test_is_abstract_method(self):
